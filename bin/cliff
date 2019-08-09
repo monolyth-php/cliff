@@ -1,0 +1,26 @@
+#!/usr/bin/php
+<?php
+
+namespace Monolyth\Cliff;
+
+use Throwable;
+
+$arg = $argv;
+array_shift($arg);
+$cliff = new Command;
+list($flags, $arguments) = Util::parse($arg);
+try {
+    foreach ($flags as $flag => $value) {
+        $cliff->$flag = $value;
+    }
+} catch (UnknownFlagException $e) {
+    Util::error($e);
+    die(1);
+}
+try {
+    $cliff(...$arguments);
+} catch (Throwable $e) {
+    Util::error($e);
+    die($e->getCode());
+}
+
