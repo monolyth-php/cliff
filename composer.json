@@ -9,5 +9,8 @@
             "email": "marijn@monomelodies.nl"
         }
     ],
-    "require": {}
+    "require": {},
+    "require-dev": {
+        "toast/unit": "^1.3"
+    }
 }
