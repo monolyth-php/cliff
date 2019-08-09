@@ -1,0 +1,13 @@
+{
+    "name": "monolyth/cliff",
+    "description": "Command line interface for Monolyth unframework",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Marijn Ophorst",
+            "email": "marijn@monomelodies.nl"
+        }
+    ],
+    "require": {}
+}
