@@ -5,22 +5,28 @@ namespace Monolyth\Cliff;
 
 use Throwable;
 
-$arg = $argv;
-array_shift($arg);
-$cliff = new Command;
-list($flags, $arguments) = Util::parse($arg);
-try {
-    foreach ($flags as $flag => $value) {
-        $cliff->$flag = $value;
-    }
-} catch (UnknownFlagException $e) {
-    Util::error($e);
-    die(1);
+if (!file_exists(getcwd().'/vendor/autoload.php')) {
+    fwrite(STDERR, <<<EOT
+vendor/autoload.php not found; did you run `composer install`?
+
+EOT
+    );
+    die(9);
 }
+
+require_once getcwd().'/vendor/autoload.php';
+
+$arg = $argv;
+// This is the executable's name, we don't care about that.
+array_shift($arg);
+$command = Command::toPhpName(array_shift($arg));
 try {
-    $cliff(...$arguments);
+    $cliff = new $command;
+    $cliff(...array_filter($arg, function ($entry) {
+        return $entry{0} != '-';
+    }));
 } catch (Throwable $e) {
-    Util::error($e);
+    Command::error($e);
     die($e->getCode());
 }
 
