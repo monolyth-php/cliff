@@ -66,32 +66,52 @@ automatically show a helpful error message (see below).
 
 ## Flags
 A "flag" is an invocation component prefixed by `-` or `--`. Traditionally on
-Unix-like systems, a single dash implies "followed by a single letter, a space
-and optionally a value", whilst the double dash implies "followed by multiple
+Unix-like systems, a single dash implies "followed by a single letter, and
+optionally a value", whilst the double dash implies "followed by multiple
 letters, an equals sign and a more complex value". `cliff` follows this
 tradition.
 
-All flags are set on the command using magic setters. The flags are
-"normalised", i.e. a flag `my_user_name` will end up as `$this->myUserName`.
+All flags are set as properties on the command. The flags are "normalised",
+i.e. a flag `my_user_name` will end up as `$this->myUserName`.
 
-The implementor should define all flags as properties (their visibility doesn't
-really matter, but if certain commands should support base class extension
-beware of private/protected issues. _Any_ property on the command class is
-considered a flag (with its reverse-normalised name).
+The implementor should define all flags as public properties. Any non-public
+property is not considered a flag but e.g. a dependency injection.
 
 ### Defining short-hand flags
 The default for any flag is to also define a short-hand version with its first
 letter in uppercase, e.g. a flag `--password` will also be available as `-P`.
 For complicated commands with many arguments, this may give conflicts. `cliff`
-will throw an error in that case (`FlagNotResolvableExeception`). To specify the
-short-hand version you want, you may annotate the property:
+will ignore any duplicate shorthand flags, so e.g. if your command class
+specifies both the `file` and `format` properties, only `-f` for `---file` will
+be available as a shorthand.
+
+To specify the short-hand version you want, you may annotate the property:
 
 ```php
 <?php
 
 //...
-/** @Alias W */
-public $password;
+/** @Alias o */
+public $format;
+```
+
+## Flag types
+Flags come in three variants: required, optional and empty (an empty flag is
+optional by default). Defining these in your command class is simple:
+
+```php
+<?php
+
+class Command extends \Monolyth\Cliff\Command
+{
+    /** @var string */
+    public $requiredFlag;
+    /** @var string */
+    public $optionalFlag = 'foo'; // The default value means this is optional
+    /** @var bool */
+    public $emptyFlag = false; // Boolean flags are per defintion empty
+}
+
 ```
 
 ## Error reporting
