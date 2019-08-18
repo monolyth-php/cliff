@@ -21,5 +21,8 @@
             "Monolyth\\Cliff\\": "./src",
             "Monolyth\\Cliff\\Demo\\": "./demo"
         }
+    },
+    "bin": {
+        "bin/cliff"
     }
 }
