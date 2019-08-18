@@ -5,12 +5,23 @@ namespace Monolyth\Cliff;
 use GetOpt\GetOpt;
 use GetOpt\Option;
 use Throwable;
-use ReflectionObject;
-use ReflectionProperty;
+use Monomelodies\Reflex\ReflectionObject;
+use Monomelodies\Reflex\ReflectionProperty;
 use zpt\anno\Annotations;
 
+/**
+ * Abstract base command all your custom commands should extend.
+ */
 abstract class Command
 {
+    /**
+     * @var string
+     */
+    public $help = '*';
+
+    /**
+     * @return void
+     */
     public function __construct()
     {
         $getopt = new GetOpt;
@@ -45,8 +56,23 @@ abstract class Command
             }
             $this->$name = gettype($this->$name) === 'boolean' ? (bool)$value : $value;
         }
+        if ($getopt->getOption('h') || $getopt->getOption('help')) {
+            switch ($this->help) {
+                case '1':
+                    $doccomment = $reflection->getCleanedDoccomment();
+                    fwrite(STDOUT, "\n$doccomment\n\n");
+                    exit(0);
+                default:
+            }
+        }
     }
 
+    /**
+     * @param string $name Command name as passed on the CLI. Cliff supports
+     *  both `/` as Laravel-style `:` as separators (instead of PHP's clumsy `\`
+     *  namespace separator).
+     * @return string
+     */
     public static function toPhpName(string $name) : string
     {
         $parts = preg_split('@[:/]@', strtolower($name));
@@ -56,12 +82,10 @@ abstract class Command
         return implode('\\', $parts).'\Command';
     }
 
-    public static function error(Throwable $e) : void
-    {
-        // for now:
-        var_dump($e->getMessage());
-    }
-
+    /**
+     * @param string $name
+     * @return string
+     */
     private static function toFlagName(string $name) : string
     {
         return preg_replace_callback('@([A-Z])@', function ($match) {
@@ -69,6 +93,10 @@ abstract class Command
         }, $name);
     }
 
+    /**
+     * @param string $name
+     * @return string
+     */
     private static function toPropertyName(string $name) : string
     {
         return preg_replace_callback('@_([a-z])@', function ($match) {
