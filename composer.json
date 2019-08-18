@@ -11,7 +11,8 @@
     ],
     "require": {
         "ulrichsg/getopt-php": "^3.2",
-        "zeptech/annotations": "^1.1"
+        "zeptech/annotations": "^1.1",
+        "monomelodies/reflex": "^0.3.0"
     },
     "require-dev": {
         "toast/unit": "^1.3"
