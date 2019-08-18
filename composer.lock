@@ -4,8 +4,49 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7a45d00a7c92026bcf030948ebe975f0",
+    "content-hash": "bf7dbebc29a338b5b1f32180ebeba50c",
     "packages": [
+        {
+            "name": "monomelodies/reflex",
+            "version": "0.3.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/monomelodies/reflex.git",
+                "reference": "7105c4c0945b5ab8b4a5d4b91c653eb513947e17"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/monomelodies/reflex/zipball/7105c4c0945b5ab8b4a5d4b91c653eb513947e17",
+                "reference": "7105c4c0945b5ab8b4a5d4b91c653eb513947e17",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7",
+                "zeptech/annotations": "^1.1"
+            },
+            "require-dev": {
+                "toast/unit": "^1.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Monomelodies\\Reflex\\": "./src",
+                    "Tests\\": "./classes-for-testing"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Marijn Ophorst",
+                    "email": "marijn@monomelodies.nl"
+                }
+            ],
+            "description": "Reflection utilities for PHP7+",
+            "time": "2019-08-18T07:48:23+00:00"
+        },
         {
             "name": "ulrichsg/getopt-php",
             "version": "3.2.2",
