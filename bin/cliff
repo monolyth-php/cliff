@@ -4,6 +4,7 @@
 namespace Monolyth\Cliff;
 
 use Throwable;
+use Monomelodies\Reflex\ReflectionMethod;
 
 if (!file_exists(getcwd().'/vendor/autoload.php')) {
     fwrite(STDERR, <<<EOT
@@ -16,18 +17,78 @@ EOT
 
 require_once getcwd().'/vendor/autoload.php';
 
+function paramList(array $params) : string
+{
+    ob_start();
+    $param = array_shift($params);
+    echo ' ';
+    if ($param->isOptional()) {
+        echo '[';
+    }
+    echo $param->getName();
+    if ($params) {
+        echo paramList($params);
+    }
+    if ($param->isOptional()) {
+        echo  ']';
+    }
+    return ob_get_clean();
+}
+
+function optionList(Command $command)
+{
+    ob_start();
+    $options = [];
+    foreach ($command->getOptionList() as $option) {
+        $names = [];
+        if ($name = $option->getShort()) {
+            $names[] = "-$name";
+        }
+        if ($name = $option->getLong()) {
+            $names[] = "--$name";
+        }
+        printf("* %s\n", implode('|', $names));
+    }
+    return ob_get_clean();
+}
+
 $arg = $argv;
 // This is the executable's name, we don't care about that.
 array_shift($arg);
-$command = Command::toPhpName(array_shift($arg));
+$originalName = array_shift($arg);
+$command = Command::toPhpName($originalName);
 try {
     $cliff = new $command;
-    $cliff(...array_filter($arg, function ($entry) {
+    $arguments = array_filter($arg, function ($entry) {
         return $entry{0} != '-';
-    }));
+    });
+    $invoker = new ReflectionMethod($cliff, '__invoke');
+    if (count($arguments) >= $invoker->getNumberOfRequiredParameters()) {
+        $invoker->invokeArgs($cliff, $arguments);
+    } else {
+        fwrite(STDERR, sprintf(
+            <<<EOT
+
+USAGE: `vendor/bin/cliff $originalName [OPTIONS]%s`
+
+...where [OPTIONS] can be any of:
+
+%s
+
+Call with -hOPTION or --help=OPTION for option-specific documentation.
+
+
+EOT
+            ,
+            paramList($invoker->getParameters()),
+            optionList($cliff)
+        ));
+        exit(1);
+    }
 } catch (Throwable $e) {
     fwrite(STDERR, sprintf(
         <<<EOT
+
 Oops! We seem to have jumped off a cliff, whilst shouting:
 "%s"
 
