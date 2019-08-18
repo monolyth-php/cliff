@@ -114,17 +114,22 @@ class Command extends \Monolyth\Cliff\Command
 
 ```
 
-## Error reporting
-Via reflection, the doccomments of both the class and the `__invoke` method are
-utilised.
+## Documentation, help and error reporting
+Via reflection, the doccomments of the class, the `__invoke` method and the
+options properties are utilised.
 
 Use the doccomment of the class to describe general usage. This is akin to
-calling common Unix commands with the `-h[elp]` flag. This message is shown
-whenever the command is called with any required argument is missing.
+calling common Unix commands with the `-h[elp]` flag.
 
-The doccomment of the `__invoke` method is shown whenever it returns a non-zero
-value.
+Use the doccomment of your `__invoke` method to described which arguments the
+command expects. This message is shown when any required argument is missing.
 
-If the `__invoke` method throws any uncaught exception, its message instead is
-shown (with helpful details if you're using `Monolyth\Envy`).
+Use the doccomment of any option property for detailed help when it is passed as
+a value to the `-h` or `--help` options. This option is defined on the `Command`
+baseclass. You _can_ override it in your own command, but it is handled in the
+base constructor (which you probably don't want to override...).
+
+If the `__invoke` method throws any uncaught exception, its message is shown
+and a non-zero exit status is returned. Note that exit status 1 is reserved for
+when required arguments are missing.
 
