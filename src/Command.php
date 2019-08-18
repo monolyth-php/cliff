@@ -4,6 +4,7 @@ namespace Monolyth\Cliff;
 
 use GetOpt\GetOpt;
 use GetOpt\Option;
+use GetOpt\ArgumentException\Unexpected;
 use Throwable;
 use Monomelodies\Reflex\ReflectionObject;
 use Monomelodies\Reflex\ReflectionProperty;
@@ -16,8 +17,14 @@ abstract class Command
 {
     /**
      * @var string
+     *
+     * The built-in `-h[OPTION]` or `--help[=OPTION]` command displays detailed
+     * information about an option.
      */
     public $help = '*';
+
+    /** @var array */
+    private static $__optionList = [];
 
     /**
      * @return void
@@ -45,9 +52,14 @@ abstract class Command
             $optional = $type === 'boolean'
                 ? GetOpt::NO_ARGUMENT
                 : ($type !== 'NULL' ? GetOpt::OPTIONAL_ARGUMENT : GetOpt::REQUIRED_ARGUMENT);
-            $options[] = new Option($short, $long, $optional);
+            $option = new Option($short, $long, $optional);
+            if ($long) {
+                self::$__optionList[$long] = $option;
+            } else {
+                self::$__optionList[$short] = $option;
+            }
         }
-        $getopt->addOptions($options);
+        $getopt->addOptions(self::getOptionList());
         $getopt->process();
         foreach ($getopt->getOptions() as $name => $value) {
             $name = self::toPropertyName($name);
@@ -56,13 +68,29 @@ abstract class Command
             }
             $this->$name = gettype($this->$name) === 'boolean' ? (bool)$value : $value;
         }
-        if ($getopt->getOption('h') || $getopt->getOption('help')) {
+        if ($help = $getopt->getOption('help')) {
             switch ($this->help) {
                 case '1':
                     $doccomment = $reflection->getCleanedDoccomment();
                     fwrite(STDOUT, "\n$doccomment\n\n");
                     exit(0);
                 default:
+                    foreach (self::$__optionList as $option) {
+                        if ($option->getShort() == $help || $option->getLong() == $help) {
+                            $realName = $option->getLong() ?: $option->getShort();
+                            break;
+                        }
+                    }
+                    if (!isset($realName)) {
+                        throw new Unexpected(sprintf(GetOpt::translate('option-unknown'), $help));
+                    } else {
+                        $realName = self::toPropertyName($realName);
+                    }
+                    // We know this exists, or GetOpt will have complained earlier.
+                    $property = new ReflectionProperty($this, $realName);
+                    $doccomment = $property->getCleanedDoccomment();
+                    fwrite(STDOUT, "\n$doccomment\n\n");
+                    exit(0);
             }
         }
     }
@@ -80,6 +108,16 @@ abstract class Command
             $part = ucfirst($part);
         });
         return implode('\\', $parts).'\Command';
+    }
+
+    /**
+     * Returns the full list of available options.
+     *
+     * @return array Array of `GetOpt\Option` objects.
+     */
+    public static function getOptionList() : array
+    {
+        return self::$__optionList;
     }
 
     /**
