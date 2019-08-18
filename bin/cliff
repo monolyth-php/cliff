@@ -26,7 +26,19 @@ try {
         return $entry{0} != '-';
     }));
 } catch (Throwable $e) {
-    Command::error($e);
-    die($e->getCode());
+    fwrite(STDERR, sprintf(
+        <<<EOT
+Oops! We seem to have jumped off a cliff, whilst shouting:
+"%s"
+
+This happened in file %s on line %d.
+
+EOT
+        ,
+        $e->getMessage(),
+        $e->getFile(),
+        $e->getLine()
+    ));
+    exit($e->getCode());
 }
 
