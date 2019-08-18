@@ -33,6 +33,7 @@ Oops! We seem to have jumped off a cliff, whilst shouting:
 
 This happened in file %s on line %d.
 
+
 EOT
         ,
         $e->getMessage(),
