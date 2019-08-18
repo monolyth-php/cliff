@@ -76,7 +76,6 @@ USAGE: `vendor/bin/cliff $originalName [OPTIONS]%s`
 [OPTIONS] can be any of:
 
 %s
-
 Call with -hOPTION or --help=OPTION for option-specific documentation.
 
 
