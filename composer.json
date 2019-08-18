@@ -22,7 +22,7 @@
             "Monolyth\\Cliff\\Demo\\": "./demo"
         }
     },
-    "bin": {
+    "bin": [
         "bin/cliff"
-    }
+    ]
 }
