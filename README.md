@@ -64,6 +64,11 @@ public function __invoke(string $path, string $filename)
 If the command gets called with any required argument missing, `cliff` will
 automatically show a helpful error message (see below).
 
+> If the command class does not extend `Monolyth\Cliff\Command`, everything will
+> run as normal - but obviously you won't be able to make use of Cliff's
+> argument parsing, help features (see below) etc. Cliff will show a warning
+> about it; if you're not using Cliff you shouldn't, ehm, be using Cliff ;)
+
 ## Flags
 A "flag" is an invocation component prefixed by `-` or `--`. Traditionally on
 Unix-like systems, a single dash implies "followed by a single letter, and
