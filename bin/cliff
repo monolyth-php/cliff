@@ -59,6 +59,14 @@ $originalName = array_shift($arg);
 $command = Command::toPhpName($originalName);
 try {
     $cliff = new $command;
+    if (!($cliff instanceof Command)) {
+        fwrite(STDERR, <<<EOT
+
+The command `$command` does not extend `Monolyth\\Cliff\\Command`.
+
+EOT
+        );
+    }
     $arguments = array_filter($arg, function ($entry) {
         return $entry{0} != '-';
     });
