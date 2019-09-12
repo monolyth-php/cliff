@@ -31,6 +31,7 @@ abstract class Command
      */
     public function __construct()
     {
+        self::$__optionList = [];
         $getopt = new GetOpt;
         $reflection = new ReflectionObject($this);
         foreach ($reflection->getProperties(ReflectionProperty::IS_PUBLIC & ~ReflectionProperty::IS_STATIC) as $property) {
