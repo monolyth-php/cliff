@@ -73,6 +73,7 @@ EOT
     $invoker = new ReflectionMethod($cliff, '__invoke');
     if (count($arguments) >= $invoker->getNumberOfRequiredParameters()) {
         $invoker->invokeArgs($cliff, $arguments);
+        exit(0);
     } else {
         fwrite(STDERR, sprintf(
             <<<EOT
