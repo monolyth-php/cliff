@@ -142,7 +142,7 @@ when required arguments are missing.
 Like `vendor/autoload.php`, your command might require some bootstrapping, e.g.
 if you're using a framework. You can use the `@preload [filename]` annotation to
 automate this (instead of required `require_once` calls which are slightly
-ugly).
+ugly). This annotation should be placed on the docblock of the class.
 
 Multiple `@preload` annotations are included in order. Note that all paths
 should be relative to `getcwd()`.
