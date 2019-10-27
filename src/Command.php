@@ -34,6 +34,15 @@ abstract class Command
         self::$__optionList = [];
         $getopt = new GetOpt;
         $reflection = new ReflectionObject($this);
+        $annotations = new Annotations($reflection);
+        if (isset($annotations['preload'])) {
+            if (!is_array($annotations['preload'])) {
+                $annotations['preload'] = [$annotations['preload']];
+            }
+            foreach ($annotations['preload'] as $preload) {
+                require_once getcwd()."/$preload";
+            }
+        }
         foreach ($reflection->getProperties(ReflectionProperty::IS_PUBLIC & ~ReflectionProperty::IS_STATIC) as $property) {
             $annotations = new Annotations($property);
             if (isset($annotations['alias'])) {
