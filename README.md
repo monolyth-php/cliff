@@ -86,9 +86,12 @@ property is not considered a flag but e.g. a dependency injection.
 The default for any flag is to also define a short-hand version with its first
 letter in lowercase, e.g. a flag `--password` will also be available as `-p`.
 For complicated commands with many arguments, this may give conflicts. `cliff`
-will ignore any duplicate shorthand flags, so e.g. if your command class
-specifies both the `file` and `format` properties, only `-f` for `---file` will
-be available as a shorthand.
+will first use the uppercased version of the duplicate argument. If that too is
+already taken, it will ignore the duplicate shorthand flag.
+
+So e.g. if your command class specifies the `file`, `format` and `foo`
+properties, only `-f` for `---file` and `-F` for format will be available as a
+shorthand.
 
 To explicitly specify the short-hand version you want, you may annotate the
 property:
@@ -98,7 +101,7 @@ property:
 
 //...
 /** @Alias o */
-public $format;
+public $foo;
 ```
 
 ## Flag types
@@ -111,7 +114,7 @@ optional by default). Defining these in your command class is simple:
 class Command extends \Monolyth\Cliff\Command
 {
     /** @var string */
-    public $requiredFlag;
+    public $requiredFlag; // No default value, so this is required
     /** @var string */
     public $optionalFlag = 'foo'; // The default value means this is optional
     /** @var bool */
@@ -119,6 +122,15 @@ class Command extends \Monolyth\Cliff\Command
 }
 
 ```
+
+Note that the marking the flag "required" simply means one _has_ to pass a value
+when using the flag; the flag itself can never be "required". If you require
+values to be passed to the command when run, use _arguments_.
+
+In other words, an optional flag can act as either having a value or a boolean.
+
+If an optional argument has a default value of an empty string, it is set to
+`NULL` instead so various PHP coalesce operators will work as expected.
 
 ## Documentation, help and error reporting
 Via reflection, the doccomments of the class, the `__invoke` method and the
@@ -142,8 +154,8 @@ when required arguments are missing.
 ## Preloading files
 Like `vendor/autoload.php`, your command might require some bootstrapping, e.g.
 if you're using a framework. You can use the `@preload [filename]` annotation to
-automate this (instead of required `require_once` calls which are slightly
-ugly). This annotation should be placed on the docblock of the class.
+automate this (instead of using `require_once` calls which are slightly ugly).
+This annotation should be placed on the docblock of the class.
 
 Multiple `@preload` annotations are included in order. Note that all paths
 should be relative to `getcwd()`.
