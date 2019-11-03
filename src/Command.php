@@ -100,9 +100,12 @@ abstract class Command
         }
         if ($help = $getopt->getOption('help')) {
             switch ($this->help) {
-                case '1':
+                case '*':
                     $doccomment = $reflection->getCleanedDoccomment();
                     fwrite(STDOUT, "\n$doccomment\n\n");
+                    fwrite(STDOUT, "[OPTIONS] can be any of:\n\n");
+                    fwrite(STDOUT, optionList($this));
+                    fwrite(STDOUT, "\nCall with -hOPTION or --help=OPTION for option-specific documentation.\n\n");
                     exit(0);
                 default:
                     foreach (self::$__optionList as $option) {
