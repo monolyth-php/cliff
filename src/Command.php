@@ -43,15 +43,26 @@ abstract class Command
                 require_once getcwd()."/$preload";
             }
         }
+        $defaults = $reflection->getDefaultProperties();
+        $usedAliases = [];
         foreach ($reflection->getProperties(ReflectionProperty::IS_PUBLIC & ~ReflectionProperty::IS_STATIC) as $property) {
             $annotations = new Annotations($property);
             if (isset($annotations['alias'])) {
+                if (strlen($annotations['alias']) == 1) {
+                    throw new DomainException("Aliases must be one-letter shorthand codes, {$annotations['alias']} given for ".$property->getName());
+                }
                 $short = $annotations['alias'];
             } else {
                 $short = substr($property->getName(), 0, 1);
             }
-            if ($getopt->getOption($short)) {
+            if (in_array($short, $usedAliases)) {
+                // Attempt fallback to uppercase variant
+                $short = strtoupper($short);
+            }
+            if (in_array($short, $usedAliases)) {
                 $short = null;
+            } else {
+                $usedAliases[] = $short;
             }
             if (strlen($property->getName()) == 1) {
                 $long = null;
@@ -61,22 +72,31 @@ abstract class Command
             $type = gettype($property->getValue($this));
             $optional = $type === 'boolean'
                 ? GetOpt::NO_ARGUMENT
-                : ($type !== 'NULL' ? GetOpt::OPTIONAL_ARGUMENT : GetOpt::REQUIRED_ARGUMENT);
+                : (isset($defaults[$property->getName()]) ? GetOpt::OPTIONAL_ARGUMENT : GetOpt::REQUIRED_ARGUMENT);
             $option = new Option($short, $long, $optional);
-            if ($long) {
-                self::$__optionList[$long] = $option;
-            } else {
-                self::$__optionList[$short] = $option;
-            }
+            self::$__optionList[$long ?? $short] = $option;
         }
-        $getopt->addOptions(self::getOptionList());
+        $getopt->addOptions(self::$__optionList);
         $getopt->process();
         foreach ($getopt->getOptions() as $name => $value) {
             $name = self::toPropertyName($name);
             if (!property_exists($this, $name)) {
                 continue;
             }
-            $this->$name = gettype($this->$name) === 'boolean' ? (bool)$value : $value;
+            $type = gettype($this->$name);
+            switch ($type) {
+                case 'boolean':
+                    $this->$name = !$this->$name;
+                    break;
+                default:
+                    if (gettype($value) === 'string') {
+                        settype($value, $type);
+                        $this->$name = $value;
+                    } elseif ($type === 'string' && !strlen($this->$name)) {
+                        $this->$name = null;
+                    }
+                    break;
+            }
         }
         if ($help = $getopt->getOption('help')) {
             switch ($this->help) {
@@ -107,8 +127,8 @@ abstract class Command
 
     /**
      * @param string $name Command name as passed on the CLI. Cliff supports
-     *  both `/` as Laravel-style `:` as separators (instead of PHP's clumsy `\`
-     *  namespace separator).
+     *  both `/` and Laravel-style `:` as separators (instead of PHP's clumsy
+     * `\` namespace separator).
      * @return string
      */
     public static function toPhpName(string $name) : string
