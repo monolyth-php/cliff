@@ -104,6 +104,10 @@ property:
 public $foo;
 ```
 
+Note that only the longhand variant is set as a property, unless the flag is
+defined as shorthand-only. In other words, only the properties defined on the
+class are used.
+
 ## Flag types
 Flags come in three variants: required, optional and empty (an empty flag is
 optional by default). Defining these in your command class is simple:
