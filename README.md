@@ -84,13 +84,14 @@ property is not considered a flag but e.g. a dependency injection.
 
 ### Defining short-hand flags
 The default for any flag is to also define a short-hand version with its first
-letter in uppercase, e.g. a flag `--password` will also be available as `-P`.
+letter in lowercase, e.g. a flag `--password` will also be available as `-p`.
 For complicated commands with many arguments, this may give conflicts. `cliff`
 will ignore any duplicate shorthand flags, so e.g. if your command class
 specifies both the `file` and `format` properties, only `-f` for `---file` will
 be available as a shorthand.
 
-To specify the short-hand version you want, you may annotate the property:
+To explicitly specify the short-hand version you want, you may annotate the
+property:
 
 ```php
 <?php
