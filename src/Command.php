@@ -90,7 +90,6 @@ abstract class Command
                     break;
                 default:
                     if (gettype($value) === 'string') {
-                        settype($value, $type);
                         $this->$name = $value;
                     } elseif ($type === 'string' && !strlen($this->$name)) {
                         $this->$name = null;
