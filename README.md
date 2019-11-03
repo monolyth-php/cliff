@@ -136,6 +136,12 @@ In other words, an optional flag can act as either having a value or a boolean.
 If an optional argument has a default value of an empty string, it is set to
 `NULL` instead so various PHP coalesce operators will work as expected.
 
+### Negating empty flags
+If an empty flag is set, the default boolean value is _negated_. So if the
+default is `true`, setting the flag makes it `false` and vice versa. Typically a
+default of `false` will make the most sense, but this might come in handy if
+your code's logic is... peculiar.
+
 ## Documentation, help and error reporting
 Via reflection, the doccomments of the class, the `__invoke` method and the
 options properties are utilised.
