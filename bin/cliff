@@ -70,9 +70,10 @@ The command `$command` does not extend `Monolyth\\Cliff\\Command`.
 EOT
         );
     }
-    $arguments = array_filter($arg, function ($entry) {
-        return $entry{0} != '-';
-    });
+    // @see https://www.php.net/manual/en/function.getopt.php#114587
+    $opt = $cliff->getOptionList();
+    $args = array_search('--', $arg);
+    $arguments = array_splice($arg, $args ? ++$args : (count($arg) - count($opt)));
     $invoker = new ReflectionMethod($cliff, '__invoke');
     if (count($arguments) >= $invoker->getNumberOfRequiredParameters()) {
         $invoker->invokeArgs($cliff, $arguments);
