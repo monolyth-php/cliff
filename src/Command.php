@@ -27,12 +27,14 @@ abstract class Command
     private static $__optionList = [];
 
     /**
+     * @param array $options Optional manual option specification.
+     * @param array $settings Optional manual settings specification.
      * @return void
      */
-    public function __construct()
+    public function __construct(array $options = [], array $settings = [])
     {
         self::$__optionList = [];
-        $getopt = new GetOpt;
+        $getopt = new GetOpt($options, $settings);
         $reflection = new ReflectionObject($this);
         $annotations = new Annotations($reflection);
         if (isset($annotations['preload'])) {
