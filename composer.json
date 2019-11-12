@@ -15,7 +15,7 @@
         "monomelodies/reflex": "^0.3.0"
     },
     "require-dev": {
-        "toast/unit": "^1.3"
+        "toast/unit": "^2.0"
     },
     "autoload": {
         "psr-4": {
