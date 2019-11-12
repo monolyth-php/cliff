@@ -31,6 +31,13 @@ class Command extends Cliff\Command
     public $emptyOption = false;
 
     /**
+     * @var array
+     *
+     * This option accepts multiple values; it's an array.
+     */
+    public $multipleOptions = [];
+
+    /**
      * To run the demo command, exactly one argument needs to be passed. It can
      * be any string value, it is simply outputted.
      */
@@ -63,6 +70,9 @@ EOT
         }
         if ($this->emptyOption) {
             fwrite(STDOUT, "The empty option was also set.\n");
+        }
+        if ($this->multipleOptions) {
+            fwrite(STDOUT, "The following multiple options were given: ".implode(', ', $this->multipleOptions)."\n");
         }
     }
 }
