@@ -5,6 +5,7 @@ namespace Monolyth\Cliff;
 
 use Throwable;
 use Monomelodies\Reflex\ReflectionMethod;
+use GetOpt\ArgumentException\Missing;
 
 if (!file_exists(getcwd().'/vendor/autoload.php')) {
     fwrite(STDERR, <<<EOT
@@ -35,23 +36,6 @@ function paramList(array $params) : string
     return ob_get_clean();
 }
 
-function optionList(Command $command)
-{
-    ob_start();
-    $options = [];
-    foreach ($command->getOptionList() as $option) {
-        $names = [];
-        if ($name = $option->getShort()) {
-            $names[] = "-$name";
-        }
-        if ($name = $option->getLong()) {
-            $names[] = "--$name";
-        }
-        printf("* %s\n", implode('|', $names));
-    }
-    return ob_get_clean();
-}
-
 $arg = $argv;
 // This is the executable's name, we don't care about that.
 array_shift($arg);
@@ -70,36 +54,25 @@ The command `$command` does not extend `Monolyth\\Cliff\\Command`.
 EOT
         );
     }
-    // @see https://www.php.net/manual/en/function.getopt.php#114587
-    $opt = $cliff->getOptionList();
-    $args = array_search('--', $arg);
-    $arguments = array_splice($arg, $args ? ++$args : (count($arg) - count($opt)));
-    $invoker = new ReflectionMethod($cliff, '__invoke');
-    if (count($arguments) >= $invoker->getNumberOfRequiredParameters()) {
-        $invoker->invokeArgs($cliff, $arguments);
-        exit(0);
-    } else {
-        fwrite(STDERR, sprintf(
-            <<<EOT
+    $arguments = $cliff->getOperands();
+    array_shift($arguments); // script name
+    array_shift($arguments); // Cliff command
+    $cliff(...$arguments);
+} catch (Missing $e) {
+    $invoker = new ReflectionMethod($command, '__invoke');
+    fwrite(STDERR, sprintf(
+        <<<EOT
 
 USAGE: `vendor/bin/cliff $originalName [OPTIONS]%s`
 
 %s
 
-[OPTIONS] can be any of:
-
-%s
-Call with -hOPTION or --help=OPTION for option-specific documentation.
-
-
 EOT
-            ,
-            paramList($invoker->getParameters()),
-            $invoker->getCleanedDoccomment(),
-            optionList($cliff)
-        ));
-        exit(1);
-    }
+        ,
+        paramList($invoker->getParameters()),
+        $invoker->getCleanedDoccomment()
+    ));
+    exit(1);
 } catch (Throwable $e) {
     fwrite(STDERR, sprintf(
         <<<EOT
