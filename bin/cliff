@@ -57,6 +57,9 @@ $arg = $argv;
 array_shift($arg);
 $originalName = array_shift($arg);
 $command = Command::toPhpName($originalName);
+if (!class_exists($command)) {
+    $command .= '\Command';
+}
 try {
     $cliff = new $command;
     if (!($cliff instanceof Command)) {
