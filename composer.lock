@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "94838b21c58ea11094420725b2150064",
+    "content-hash": "fe9c24626941db39a1aad578a58c9708",
     "packages": [
         {
             "name": "monomelodies/reflex",
@@ -395,6 +395,8 @@
     "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
+    "platform": {
+        "php": ">=7.3"
+    },
     "platform-dev": []
 }
