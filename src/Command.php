@@ -5,8 +5,10 @@ namespace Monolyth\Cliff;
 use GetOpt\GetOpt;
 use GetOpt\Option;
 use GetOpt\ArgumentException\Unexpected;
+use GetOpt\Operand;
 use Throwable;
 use Monomelodies\Reflex\ReflectionObject;
+use Monomelodies\Reflex\ReflectionMethod;
 use Monomelodies\Reflex\ReflectionProperty;
 use zpt\anno\Annotations;
 
@@ -25,6 +27,9 @@ abstract class Command
 
     /** @var array */
     private $__optionList = [];
+
+    /** @var GetOpt\GetOpt */
+    private $__getopt;
 
     /**
      * @param array $arguments Optional manual arguments.
@@ -84,6 +89,23 @@ abstract class Command
             $this->__optionList[$long ?? $short] = $option;
         }
         $getopt->addOptions($this->__optionList);
+        $getopt->addOperand(new Operand('scriptName', Operand::REQUIRED));
+        $getopt->addOperand(new Operand('command', Operand::REQUIRED));
+        $invoker = new ReflectionMethod($this, '__invoke');
+        foreach ($invoker->getParameters() as $parameter) {
+            $name = $parameter->getName();
+            $default = $parameter->isDefaultValueAvailable();
+            $mode = $default ? Operand::OPTIONAL : Operand::REQUIRED;
+            $type = $parameter->getType();
+            if ("$type" === 'array') {
+                $mode |= Operand::MULTIPLE;
+            }
+            $operand = new Operand($name, $mode);
+            if ($default) {
+                $operand->setDefaultValue($param->getDefaultValue());
+            }
+            $getopt->addOperand($operand);
+        }
         $getopt->process($arguments ?? $_SERVER['argv']);
         foreach ($getopt->getOptions() as $name => $value) {
             $name = self::toPropertyName($name);
@@ -96,7 +118,7 @@ abstract class Command
                     $this->$name = !$this->$name;
                     break;
                 default:
-                    if (gettype($value) === 'string') {
+                    if (gettype($value) === 'string' || gettype($value) === 'array') {
                         $this->$name = $value;
                     } elseif ($type === 'string' && !strlen($this->$name)) {
                         $this->$name = null;
@@ -104,6 +126,7 @@ abstract class Command
                     break;
             }
         }
+        $this->__getopt = $getopt;
         if ($help = $getopt->getOption('help')) {
             switch ($this->help) {
                 case '*':
@@ -142,6 +165,11 @@ abstract class Command
     public function getOptionList() : array
     {
         return $this->__optionList;
+    }
+
+    public function getOperands() : array
+    {
+        return $this->__getopt->getOperands();
     }
 
     /**
