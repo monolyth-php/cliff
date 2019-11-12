@@ -33,6 +33,9 @@ abstract class Command
     public function __construct(array $arguments = null)
     {
         self::$__optionList = [];
+        if (isset($arguments)) {
+            array_unshift($arguments, $_SERVER['argv'][0]);
+        }
         $getopt = new GetOpt;
         $reflection = new ReflectionObject($this);
         $annotations = new Annotations($reflection);
