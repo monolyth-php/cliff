@@ -143,19 +143,20 @@ default is `true`, setting the option makes it `false` and vice versa. Typically
 a default of `false` will make the most sense, but this might come in handy if
 your code's logic is... peculiar.
 
-## Manually passing arguments
+## Manually passing options
 Sometimes you'll want to run a command from another script, e.g. when using the
-`Monolyth\Croney` scheduler. To override the arguments passed to the command,
-pass an array containing the desired commands to the constructor:
+`Monolyth\Croney` scheduler. To override the options passed to the command, pass
+an array containing the desired commands to the constructor:
 
 ```php
 <?php
 
-$command = new Foo\Command(['--foo', 'bar']);
+$command = new Foo\Command(['--bar']);
+$command('baz');
 
 ```
 
-This is identical to invoking with `vendor/bin/cliff foo --foo bar`.
+This is identical to invoking with `vendor/bin/cliff foo --bar baz`.
 
 ## Documentation, help and error reporting
 Via reflection, the doccomments of the class, the `__invoke` method and the
