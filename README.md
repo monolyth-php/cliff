@@ -69,25 +69,25 @@ automatically show a helpful error message (see below).
 > argument parsing, help features (see below) etc. Cliff will show a warning
 > about it; if you're not using Cliff you shouldn't, ehm, be using Cliff ;)
 
-## Flags
-A "flag" is an invocation component prefixed by `-` or `--`. Traditionally on
+## Options
+A "option" is an invocation component prefixed by `-` or `--`. Traditionally on
 Unix-like systems, a single dash implies "followed by a single letter, and
 optionally a value", whilst the double dash implies "followed by multiple
 letters, an equals sign and a more complex value". `cliff` follows this
 tradition.
 
-All flags are set as properties on the command. The flags are "normalised",
-i.e. a flag `my_user_name` will end up as `$this->myUserName`.
+All options are set as properties on the command. The options are "normalised",
+i.e. a option `my_user_name` will end up as `$this->myUserName`.
 
-The implementor should define all flags as public properties. Any non-public
-property is not considered a flag but e.g. a dependency injection.
+The implementor should define all options as public properties. Any non-public
+property is not considered a option but e.g. a dependency injection.
 
-### Defining short-hand flags
-The default for any flag is to also define a short-hand version with its first
-letter in lowercase, e.g. a flag `--password` will also be available as `-p`.
+### Defining short-hand options
+The default for any option is to also define a short-hand version with its first
+letter in lowercase, e.g. a option `--password` will also be available as `-p`.
 For complicated commands with many arguments, this may give conflicts. `cliff`
 will first use the uppercased version of the duplicate argument. If that too is
-already taken, it will ignore the duplicate shorthand flag.
+already taken, it will ignore the duplicate shorthand option.
 
 So e.g. if your command class specifies the `file`, `format` and `foo`
 properties, only `-f` for `---file` and `-F` for format will be available as a
@@ -104,12 +104,12 @@ property:
 public $foo;
 ```
 
-Note that only the longhand variant is set as a property, unless the flag is
+Note that only the longhand variant is set as a property, unless the option is
 defined as shorthand-only. In other words, only the properties defined on the
 class are used.
 
-## Flag types
-Flags come in three variants: required, optional and empty (an empty flag is
+## Option types
+Options come in three variants: required, optional and empty (an empty option is
 optional by default). Defining these in your command class is simple:
 
 ```php
@@ -118,28 +118,29 @@ optional by default). Defining these in your command class is simple:
 class Command extends \Monolyth\Cliff\Command
 {
     /** @var string */
-    public $requiredFlag; // No default value, so this is required
+    public $requiredOption; // No default value, so this is required
     /** @var string */
-    public $optionalFlag = 'foo'; // The default value means this is optional
+    public $optionalOption = 'foo'; // The default value means this is optional
     /** @var bool */
-    public $emptyFlag = false; // Boolean flags are per defintion empty
+    public $emptyOption = false; // Boolean options are per defintion empty
 }
 
 ```
 
-Note that the marking the flag "required" simply means one _has_ to pass a value
-when using the flag; the flag itself can never be "required". If you require
-values to be passed to the command when run, use _arguments_.
+Note that the marking the option "required" simply means one _has_ to pass a
+value when using the option; the option itself can never be "required". If you
+always require values to be passed to the command when run, use _arguments_.
 
-In other words, an optional flag can act as either having a value or a boolean.
+In other words, an optional option can act as either having a value or a
+boolean.
 
 If an optional argument has a default value of an empty string, it is set to
 `NULL` instead so various PHP coalesce operators will work as expected.
 
-### Negating empty flags
-If an empty flag is set, the default boolean value is _negated_. So if the
-default is `true`, setting the flag makes it `false` and vice versa. Typically a
-default of `false` will make the most sense, but this might come in handy if
+### Negating empty options
+If an empty option is set, the default boolean value is _negated_. So if the
+default is `true`, setting the option makes it `false` and vice versa. Typically
+a default of `false` will make the most sense, but this might come in handy if
 your code's logic is... peculiar.
 
 ## Manually passing arguments
@@ -161,7 +162,7 @@ Via reflection, the doccomments of the class, the `__invoke` method and the
 options properties are utilised.
 
 Use the doccomment of the class to describe general usage. This is akin to
-calling common Unix commands with the `-h[elp]` flag.
+calling common Unix commands with the `-h[elp]` option.
 
 Use the doccomment of your `__invoke` method to described which arguments the
 command expects. This message is shown when any required argument is missing.
