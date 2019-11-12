@@ -141,7 +141,7 @@ abstract class Command
         array_walk($parts, function (&$part) : void {
             $part = ucfirst($part);
         });
-        return implode('\\', $parts).'\Command';
+        return implode('\\', $parts);
     }
 
     /**
