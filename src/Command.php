@@ -76,7 +76,10 @@ abstract class Command
             $type = gettype($property->getValue($this));
             $optional = $type === 'boolean'
                 ? GetOpt::NO_ARGUMENT
-                : (isset($defaults[$property->getName()]) ? GetOpt::OPTIONAL_ARGUMENT : GetOpt::REQUIRED_ARGUMENT);
+                : ($type === 'array'
+                    ? GetOpt::MULTIPLE_ARGUMENT
+                    : (isset($defaults[$property->getName()]) ? GetOpt::OPTIONAL_ARGUMENT : GetOpt::REQUIRED_ARGUMENT)
+                );
             $option = new Option($short, $long, $optional);
             $this->__optionList[$long ?? $short] = $option;
         }
