@@ -24,7 +24,7 @@ abstract class Command
     public $help = '*';
 
     /** @var array */
-    private static $__optionList = [];
+    private $__optionList = [];
 
     /**
      * @param array $arguments Optional manual arguments.
@@ -32,7 +32,7 @@ abstract class Command
      */
     public function __construct(array $arguments = null)
     {
-        self::$__optionList = [];
+        $this->__optionList = [];
         if (isset($arguments)) {
             array_unshift($arguments, $_SERVER['argv'][0]);
         }
@@ -78,9 +78,9 @@ abstract class Command
                 ? GetOpt::NO_ARGUMENT
                 : (isset($defaults[$property->getName()]) ? GetOpt::OPTIONAL_ARGUMENT : GetOpt::REQUIRED_ARGUMENT);
             $option = new Option($short, $long, $optional);
-            self::$__optionList[$long ?? $short] = $option;
+            $this->__optionList[$long ?? $short] = $option;
         }
-        $getopt->addOptions(self::$__optionList);
+        $getopt->addOptions($this->__optionList);
         $getopt->process($arguments ?? $_SERVER['argv']);
         foreach ($getopt->getOptions() as $name => $value) {
             $name = self::toPropertyName($name);
@@ -111,7 +111,7 @@ abstract class Command
                     fwrite(STDOUT, "\nCall with -hOPTION or --help=OPTION for option-specific documentation.\n\n");
                     exit(0);
                 default:
-                    foreach (self::$__optionList as $option) {
+                    foreach ($this->__optionList as $option) {
                         if ($option->getShort() == $help || $option->getLong() == $help) {
                             $realName = $option->getLong() ?: $option->getShort();
                             break;
@@ -132,6 +132,16 @@ abstract class Command
     }
 
     /**
+     * Returns the full list of available options.
+     *
+     * @return array Array of `GetOpt\Option` objects.
+     */
+    public function getOptionList() : array
+    {
+        return $this->__optionList;
+    }
+
+    /**
      * @param string $name Command name as passed on the CLI. Cliff supports
      *  both `/` and Laravel-style `:` as separators (instead of PHP's clumsy
      * `\` namespace separator).
@@ -144,16 +154,6 @@ abstract class Command
             $part = ucfirst($part);
         });
         return implode('\\', $parts);
-    }
-
-    /**
-     * Returns the full list of available options.
-     *
-     * @return array Array of `GetOpt\Option` objects.
-     */
-    public static function getOptionList() : array
-    {
-        return self::$__optionList;
     }
 
     /**
