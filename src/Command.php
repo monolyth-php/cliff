@@ -27,14 +27,13 @@ abstract class Command
     private static $__optionList = [];
 
     /**
-     * @param array $options Optional manual option specification.
-     * @param array $settings Optional manual settings specification.
+     * @param array $arguments Optional manual arguments.
      * @return void
      */
-    public function __construct(array $options = [], array $settings = [])
+    public function __construct(array $arguments = null)
     {
         self::$__optionList = [];
-        $getopt = new GetOpt($options, $settings);
+        $getopt = new GetOpt;
         $reflection = new ReflectionObject($this);
         $annotations = new Annotations($reflection);
         if (isset($annotations['preload'])) {
@@ -79,7 +78,7 @@ abstract class Command
             self::$__optionList[$long ?? $short] = $option;
         }
         $getopt->addOptions(self::$__optionList);
-        $getopt->process();
+        $getopt->process($arguments ?? $_SERVER['argv']);
         foreach ($getopt->getOptions() as $name => $value) {
             $name = self::toPropertyName($name);
             if (!property_exists($this, $name)) {
