@@ -8,20 +8,20 @@
     "packages": [
         {
             "name": "monomelodies/reflex",
-            "version": "0.3.0",
+            "version": "0.3.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/monomelodies/reflex.git",
-                "reference": "7105c4c0945b5ab8b4a5d4b91c653eb513947e17"
+                "reference": "70dc4d8980bbb986bd86ec4d9e7112ba3c9728df"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/monomelodies/reflex/zipball/7105c4c0945b5ab8b4a5d4b91c653eb513947e17",
-                "reference": "7105c4c0945b5ab8b4a5d4b91c653eb513947e17",
+                "url": "https://api.github.com/repos/monomelodies/reflex/zipball/70dc4d8980bbb986bd86ec4d9e7112ba3c9728df",
+                "reference": "70dc4d8980bbb986bd86ec4d9e7112ba3c9728df",
                 "shasum": ""
             },
             "require": {
-                "php": ">=7",
+                "php": ">=7.3",
                 "zeptech/annotations": "^1.1"
             },
             "require-dev": {
@@ -45,7 +45,7 @@
                 }
             ],
             "description": "Reflection utilities for PHP7+",
-            "time": "2019-08-18T07:48:23+00:00"
+            "time": "2019-10-05T15:58:17+00:00"
         },
         {
             "name": "ulrichsg/getopt-php",
@@ -291,16 +291,16 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v4.3.3",
+            "version": "v4.3.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/yaml.git",
-                "reference": "34d29c2acd1ad65688f58452fd48a46bd996d5a6"
+                "reference": "324cf4b19c345465fad14f3602050519e09e361d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/yaml/zipball/34d29c2acd1ad65688f58452fd48a46bd996d5a6",
-                "reference": "34d29c2acd1ad65688f58452fd48a46bd996d5a6",
+                "url": "https://api.github.com/repos/symfony/yaml/zipball/324cf4b19c345465fad14f3602050519e09e361d",
+                "reference": "324cf4b19c345465fad14f3602050519e09e361d",
                 "shasum": ""
             },
             "require": {
@@ -346,7 +346,7 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "https://symfony.com",
-            "time": "2019-07-24T14:47:54+00:00"
+            "time": "2019-10-30T12:58:49+00:00"
         },
         {
             "name": "toast/unit",
