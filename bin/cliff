@@ -59,7 +59,6 @@ EOT
     }
     $arguments = $cliff->getOperands();
     array_shift($arguments); // script name
-    array_shift($arguments); // Cliff command
     $cliff(...$arguments);
 } catch (Missing $e) {
     $invoker = new ReflectionMethod($command, '__invoke');
