@@ -89,8 +89,6 @@ abstract class Command
             $this->__optionList[$long ?? $short] = $option;
         }
         $getopt->addOptions($this->__optionList);
-        $getopt->addOperand(new Operand('scriptName', Operand::REQUIRED));
-        $getopt->addOperand(new Operand('command', Operand::REQUIRED));
         $invoker = new ReflectionMethod($this, '__invoke');
         foreach ($invoker->getParameters() as $parameter) {
             $name = $parameter->getName();
