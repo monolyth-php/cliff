@@ -125,7 +125,17 @@ abstract class Command
             }
         }
         $this->__getopt = $getopt;
-        if ($help = $getopt->getOption('help')) {
+    }
+
+    /**
+     * Renders documentation, if requested.
+     *
+     * @return void
+     * @throws GetOpt\ArgumentException\Unexpected
+     */
+    public function showHelp() : void
+    {
+        if ($help = $this->__getopt->getOption('help')) {
             switch ($this->help) {
                 case '*':
                     $doccomment = $reflection->getCleanedDoccomment();
@@ -165,6 +175,11 @@ abstract class Command
         return $this->__optionList;
     }
 
+    /**
+     * Returns the list of operands.
+     *
+     * @return array
+     */
     public function getOperands() : array
     {
         return $this->__getopt->getOperands();
