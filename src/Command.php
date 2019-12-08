@@ -130,10 +130,10 @@ abstract class Command
     /**
      * Renders documentation, if requested.
      *
-     * @return void
+     * @return bool True if help was shown, else false.
      * @throws GetOpt\ArgumentException\Unexpected
      */
-    public function showHelp() : void
+    public function showHelp() : bool
     {
         if ($help = $this->__getopt->getOption('help')) {
             switch ($this->help) {
@@ -143,7 +143,7 @@ abstract class Command
                     fwrite(STDOUT, "[OPTIONS] can be any of:\n\n");
                     fwrite(STDOUT, optionList($this));
                     fwrite(STDOUT, "\nCall with -hOPTION or --help=OPTION for option-specific documentation.\n\n");
-                    exit(0);
+                    return true;
                 default:
                     foreach ($this->__optionList as $option) {
                         if ($option->getShort() == $help || $option->getLong() == $help) {
@@ -160,9 +160,10 @@ abstract class Command
                     $property = new ReflectionProperty($this, $realName);
                     $doccomment = $property->getCleanedDoccomment();
                     fwrite(STDOUT, "\n$doccomment\n\n");
-                    exit(0);
+                    return true;
             }
         }
+        return false;
     }
 
     /**
