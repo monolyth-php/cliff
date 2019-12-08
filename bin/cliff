@@ -57,9 +57,12 @@ The command `$command` does not extend `Monolyth\\Cliff\\Command`.
 EOT
         );
     }
-    $arguments = $cliff->getOperands();
-    array_shift($arguments); // script name
-    $cliff(...$arguments);
+    if (!$cliff->showHelp()) {
+        $arguments = $cliff->getOperands();
+        array_shift($arguments); // script name
+        $cliff(...$arguments);
+    }
+    exit(0);
 } catch (Missing $e) {
     $invoker = new ReflectionMethod($command, '__invoke');
     fwrite(STDERR, sprintf(
