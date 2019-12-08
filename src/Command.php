@@ -11,6 +11,7 @@ use Monomelodies\Reflex\ReflectionObject;
 use Monomelodies\Reflex\ReflectionMethod;
 use Monomelodies\Reflex\ReflectionProperty;
 use zpt\anno\Annotations;
+use Generator;
 
 /**
  * Abstract base command all your custom commands should extend.
@@ -32,7 +33,7 @@ abstract class Command
     private $__getopt;
 
     /**
-     * @param array $arguments Optional manual arguments.
+     * @param array|null $arguments Optional manual arguments.
      * @return void
      */
     public function __construct(array $arguments = null)
@@ -41,90 +42,7 @@ abstract class Command
         if (isset($arguments)) {
             array_unshift($arguments, $_SERVER['argv'][0]);
         }
-        $getopt = new GetOpt;
-        $reflection = new ReflectionObject($this);
-        $annotations = new Annotations($reflection);
-        if (isset($annotations['preload'])) {
-            if (!is_array($annotations['preload'])) {
-                $annotations['preload'] = [$annotations['preload']];
-            }
-            foreach ($annotations['preload'] as $preload) {
-                require_once getcwd()."/$preload";
-            }
-        }
-        $defaults = $reflection->getDefaultProperties();
-        $usedAliases = [];
-        foreach ($reflection->getProperties(ReflectionProperty::IS_PUBLIC & ~ReflectionProperty::IS_STATIC) as $property) {
-            $annotations = new Annotations($property);
-            if (isset($annotations['alias'])) {
-                if (strlen($annotations['alias']) == 1) {
-                    throw new DomainException("Aliases must be one-letter shorthand codes, {$annotations['alias']} given for ".$property->getName());
-                }
-                $short = $annotations['alias'];
-            } else {
-                $short = substr($property->getName(), 0, 1);
-            }
-            if (in_array($short, $usedAliases)) {
-                // Attempt fallback to uppercase variant
-                $short = strtoupper($short);
-            }
-            if (in_array($short, $usedAliases)) {
-                $short = null;
-            } else {
-                $usedAliases[] = $short;
-            }
-            if (strlen($property->getName()) == 1) {
-                $long = null;
-            } else {
-                $long = self::toFlagName($property->getName());
-            }
-            $type = gettype($property->getValue($this));
-            $optional = $type === 'boolean'
-                ? GetOpt::NO_ARGUMENT
-                : ($type === 'array'
-                    ? GetOpt::MULTIPLE_ARGUMENT
-                    : (isset($defaults[$property->getName()]) ? GetOpt::OPTIONAL_ARGUMENT : GetOpt::REQUIRED_ARGUMENT)
-                );
-            $option = new Option($short, $long, $optional);
-            $this->__optionList[$long ?? $short] = $option;
-        }
-        $getopt->addOptions($this->__optionList);
-        $invoker = new ReflectionMethod($this, '__invoke');
-        foreach ($invoker->getParameters() as $parameter) {
-            $name = $parameter->getName();
-            $default = $parameter->isDefaultValueAvailable();
-            $mode = $default ? Operand::OPTIONAL : Operand::REQUIRED;
-            $type = $parameter->getType();
-            if ("$type" === 'array') {
-                $mode |= Operand::MULTIPLE;
-            }
-            $operand = new Operand($name, $mode);
-            if ($default) {
-                $operand->setDefaultValue($param->getDefaultValue());
-            }
-            $getopt->addOperand($operand);
-        }
-        $getopt->process($arguments ?? $_SERVER['argv']);
-        foreach ($getopt->getOptions() as $name => $value) {
-            $name = self::toPropertyName($name);
-            if (!property_exists($this, $name)) {
-                continue;
-            }
-            $type = gettype($this->$name);
-            switch ($type) {
-                case 'boolean':
-                    $this->$name = !$this->$name;
-                    break;
-                default:
-                    if (gettype($value) === 'string' || gettype($value) === 'array') {
-                        $this->$name = $value;
-                    } elseif ($type === 'string' && !strlen($this->$name)) {
-                        $this->$name = null;
-                    }
-                    break;
-            }
-        }
-        $this->__getopt = $getopt;
+        $this->process($arguments);
     }
 
     /**
@@ -199,6 +117,118 @@ abstract class Command
             $part = ucfirst($part);
         });
         return implode('\\', $parts);
+    }
+
+    /**
+     * @param array|null $arguments Optional manual arguments.
+     * @return void
+     */
+    private function process(array $arguments = null) : void
+    {
+        $getopt = new GetOpt;
+        $reflection = new ReflectionObject($this);
+        $annotations = new Annotations($reflection);
+        if (isset($annotations['preload'])) {
+            $this->preloadDependencies(...(is_array($annotations['preload']) ? $annotations['preload'] : [$annotations['preload']]));
+        }
+        $this->convertPropertiesToOptions($reflection);
+        $getopt->addOptions($this->__optionList);
+        foreach ($this->convertParametersToOperands($getopt) as $operand) {
+            $getopt->addOperand($operand);
+        }
+        $getopt->process($arguments ?? $_SERVER['argv']);
+        foreach ($getopt->getOptions() as $name => $value) {
+            $this->convertOptionToProperty($name, $value);
+        }
+        $this->__getopt = $getopt;
+    }
+
+    /**
+     * @param string ...$dependencies
+     * @return void
+     */
+    private function preloadDependencies(string ...$dependencies) : void
+    {
+        foreach ($dependencies as $preload) {
+            require_once getcwd()."/$preload";
+        }
+    }
+
+    private function convertPropertiesToOptions(ReflectionObject $reflection) : void
+    {
+        $defaults = $reflection->getDefaultProperties();
+        $usedAliases = [];
+        foreach ($reflection->getProperties(ReflectionProperty::IS_PUBLIC & ~ReflectionProperty::IS_STATIC) as $property) {
+            $annotations = new Annotations($property);
+            if (isset($annotations['alias'])) {
+                if (strlen($annotations['alias']) == 1) {
+                    throw new DomainException("Aliases must be one-letter shorthand codes, {$annotations['alias']} given for ".$property->getName());
+                }
+                $short = $annotations['alias'];
+            } else {
+                $short = substr($property->getName(), 0, 1);
+            }
+            if (in_array($short, $usedAliases)) {
+                // Attempt fallback to uppercase variant
+                $short = strtoupper($short);
+            }
+            if (in_array($short, $usedAliases)) {
+                $short = null;
+            } else {
+                $usedAliases[] = $short;
+            }
+            if (strlen($property->getName()) == 1) {
+                $long = null;
+            } else {
+                $long = self::toFlagName($property->getName());
+            }
+            $type = gettype($property->getValue($this));
+            $optional = $type === 'boolean'
+                ? GetOpt::NO_ARGUMENT
+                : ($type === 'array'
+                    ? GetOpt::MULTIPLE_ARGUMENT
+                    : (isset($defaults[$property->getName()]) ? GetOpt::OPTIONAL_ARGUMENT : GetOpt::REQUIRED_ARGUMENT)
+                );
+            $option = new Option($short, $long, $optional);
+            $this->__optionList[$long ?? $short] = $option;
+        }
+    }
+
+    private function convertParametersToOperands() : Generator
+    {
+        $invoker = new ReflectionMethod($this, '__invoke');
+        foreach ($invoker->getParameters() as $parameter) {
+            $name = $parameter->getName();
+            $default = $parameter->isDefaultValueAvailable();
+            $mode = $default ? Operand::OPTIONAL : Operand::REQUIRED;
+            $type = $parameter->getType();
+            if ("$type" === 'array') {
+                $mode |= Operand::MULTIPLE;
+            }
+            $operand = new Operand($name, $mode);
+            if ($default) {
+                $operand->setDefaultValue($param->getDefaultValue());
+            }
+            yield $operand;
+        }
+    }
+
+    private function convertOptionToProperty(string $name, $value) : void
+    {
+        $name = self::toPropertyName($name);
+        if (!property_exists($this, $name)) {
+            return;
+        }
+        $type = gettype($this->$name);
+        if ($type == 'boolean') {
+            $this->$name = !$this->$name;
+        } else {
+            if (gettype($value) === 'string' || gettype($value) === 'array') {
+                $this->$name = $value;
+            } elseif ($type === 'string' && !strlen($this->$name)) {
+                $this->$name = null;
+            }
+        }
     }
 
     /**
