@@ -211,8 +211,8 @@ abstract class Command
                 $mode |= Operand::MULTIPLE;
             }
             $operand = new Operand($name, $mode);
-            if ($default) {
-                $operand->setDefaultValue($parameter->getDefaultValue());
+            if ($default and $defaultValue = $parameter->getDefaultvalue()) {
+                $operand->setDefaultValue($defaultValue);
             }
             yield $operand;
         }
