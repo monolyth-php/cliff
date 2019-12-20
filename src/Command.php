@@ -26,6 +26,9 @@ abstract class Command
      */
     public $help = '*';
 
+    /** @var bool */
+    private $strict = true;
+
     /** @var array */
     private $__optionList = [];
 
@@ -34,14 +37,16 @@ abstract class Command
 
     /**
      * @param array|null $arguments Optional manual arguments.
+     * @param bool $strict Disallow custom options. Defaults to true.
      * @return void
      */
-    public function __construct(array $arguments = null)
+    public function __construct(array $arguments = null, bool $strict = true)
     {
         $this->__optionList = [];
         if (isset($arguments)) {
             array_unshift($arguments, $_SERVER['argv'][0]);
         }
+        $this->strict = $strict;
         $this->process($arguments);
     }
 
@@ -125,7 +130,7 @@ abstract class Command
      */
     private function process(array $arguments = null) : void
     {
-        $getopt = new GetOpt;
+        $getopt = new GetOpt(null, [GetOpt::SETTING_STRICT_OPTIONS => $this->strict]);
         $reflection = new ReflectionObject($this);
         $annotations = new Annotations($reflection);
         if (isset($annotations['preload'])) {
@@ -207,7 +212,7 @@ abstract class Command
             }
             $operand = new Operand($name, $mode);
             if ($default) {
-                $operand->setDefaultValue($param->getDefaultValue());
+                $operand->setDefaultValue($parameter->getDefaultValue());
             }
             yield $operand;
         }
