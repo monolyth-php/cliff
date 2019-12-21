@@ -108,6 +108,10 @@ Note that only the longhand variant is set as a property, unless the option is
 defined as shorthand-only. In other words, only the properties defined on the
 class are used.
 
+## Long option names
+`$snakeCased` option properties are translated hyphen-separated options on the
+CLI (`--snake-cased`) and vice versa.
+
 ## Option types
 Options come in three variants: required, optional and empty (an empty option is
 optional by default). Defining these in your command class is simple:
