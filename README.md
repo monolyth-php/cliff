@@ -110,7 +110,10 @@ class are used.
 
 ## Long option names
 `$snakeCased` option properties are translated hyphen-separated options on the
-CLI (`--snake-cased`) and vice versa.
+CLI (`--snake-cased`) and vice versa. For Pete's sake don't use an upper case
+character as the first one on your public properties; for one, it's butt-ugly;
+but more importantly, Cliff won't account for this, so `$Foo` would become
+`---foo` which makes no sense (and most probably will cause an error).
 
 ## Option types
 Options come in three variants: required, optional and empty (an empty option is
