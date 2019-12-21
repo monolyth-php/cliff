@@ -77,7 +77,7 @@ letters, an equals sign and a more complex value". `cliff` follows this
 tradition.
 
 All options are set as properties on the command. The options are "normalised",
-i.e. a option `my_user_name` will end up as `$this->myUserName`.
+i.e. an option `my-user-name` will end up as `$this->myUserName`.
 
 The implementor should define all options as public properties. Any non-public
 property is not considered a option but e.g. a dependency injection.
@@ -136,7 +136,8 @@ class Command extends \Monolyth\Cliff\Command
 
 Note that the marking the option "required" simply means one _has_ to pass a
 value when using the option; the option itself can never be "required". If you
-always require values to be passed to the command when run, use _arguments_.
+always require values to be passed to the command when run, use _arguments_ to
+your `__invoke` method.
 
 In other words, an optional option can act as either having a value or a
 boolean.
