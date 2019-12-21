@@ -27,13 +27,13 @@ abstract class Command
     public $help = '*';
 
     /** @var bool */
-    private $strict = true;
+    private $_strict = true;
 
     /** @var array */
-    private $__optionList = [];
+    private $_optionList = [];
 
     /** @var GetOpt\GetOpt */
-    private $__getopt;
+    private $_getopt;
 
     /**
      * @param array|null $arguments Optional manual arguments.
@@ -42,8 +42,8 @@ abstract class Command
      */
     public function __construct(array $arguments = null, bool $strict = true)
     {
-        $this->__optionList = [];
-        $this->strict = $strict;
+        $this->_optionList = [];
+        $this->_strict = $strict;
         $this->process($arguments);
     }
 
@@ -55,7 +55,7 @@ abstract class Command
      */
     public function showHelp() : bool
     {
-        if ($help = $this->__getopt->getOption('help')) {
+        if ($help = $this->_getopt->getOption('help')) {
             switch ($this->help) {
                 case '*':
                     $reflection = new ReflectionObject($this);
@@ -66,7 +66,7 @@ abstract class Command
                     fwrite(STDOUT, "\nCall with -hOPTION or --help=OPTION for option-specific documentation.\n\n");
                     return true;
                 default:
-                    foreach ($this->__optionList as $option) {
+                    foreach ($this->_optionList as $option) {
                         if ($option->getShort() == $help || $option->getLong() == $help) {
                             $realName = $option->getLong() ?: $option->getShort();
                             break;
@@ -94,7 +94,7 @@ abstract class Command
      */
     public function getOptionList() : array
     {
-        return $this->__optionList;
+        return $this->_optionList;
     }
 
     /**
@@ -104,7 +104,7 @@ abstract class Command
      */
     public function getOperands() : array
     {
-        return $this->__getopt->getOperands();
+        return $this->_getopt->getOperands();
     }
 
     /**
@@ -139,14 +139,14 @@ abstract class Command
      */
     private function process(array $arguments = null) : void
     {
-        $getopt = new GetOpt(null, [GetOpt::SETTING_STRICT_OPTIONS => $this->strict]);
+        $getopt = new GetOpt(null, [GetOpt::SETTING_STRICT_OPTIONS => $this->_strict]);
         $reflection = new ReflectionObject($this);
         $annotations = new Annotations($reflection);
         if (isset($annotations['preload'])) {
             $this->preloadDependencies(...(is_array($annotations['preload']) ? $annotations['preload'] : [$annotations['preload']]));
         }
         $this->convertPropertiesToOptions($reflection);
-        $getopt->addOptions($this->__optionList);
+        $getopt->addOptions($this->_optionList);
         foreach ($this->convertParametersToOperands($getopt) as $operand) {
             $getopt->addOperand($operand);
         }
@@ -154,7 +154,7 @@ abstract class Command
         foreach ($getopt->getOptions() as $name => $value) {
             $this->convertOptionToProperty($name, $value);
         }
-        $this->__getopt = $getopt;
+        $this->_getopt = $getopt;
     }
 
     /**
@@ -204,7 +204,7 @@ abstract class Command
                     : (isset($defaults[$property->getName()]) ? GetOpt::OPTIONAL_ARGUMENT : GetOpt::REQUIRED_ARGUMENT)
                 );
             $option = new Option($short, $long, $optional);
-            $this->__optionList[$long ?? $short] = $option;
+            $this->_optionList[$long ?? $short] = $option;
         }
     }
 
