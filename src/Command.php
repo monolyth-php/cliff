@@ -210,6 +210,9 @@ abstract class Command
 
     private function convertParametersToOperands() : Generator
     {
+        if (!method_exists($this, '__invoke')) {
+            return;
+        }
         $invoker = new ReflectionMethod($this, '__invoke');
         foreach ($invoker->getParameters() as $parameter) {
             $name = $parameter->getName();
