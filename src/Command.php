@@ -43,9 +43,6 @@ abstract class Command
     public function __construct(array $arguments = null, bool $strict = true)
     {
         $this->__optionList = [];
-        if (isset($arguments)) {
-            array_unshift($arguments, $_SERVER['argv'][0]);
-        }
         $this->strict = $strict;
         $this->process($arguments);
     }
@@ -61,6 +58,7 @@ abstract class Command
         if ($help = $this->__getopt->getOption('help')) {
             switch ($this->help) {
                 case '*':
+                    $reflection = new ReflectionObject($this);
                     $doccomment = $reflection->getCleanedDoccomment();
                     fwrite(STDOUT, "\n$doccomment\n\n");
                     fwrite(STDOUT, "[OPTIONS] can be any of:\n\n");
@@ -141,7 +139,7 @@ abstract class Command
         foreach ($this->convertParametersToOperands($getopt) as $operand) {
             $getopt->addOperand($operand);
         }
-        $getopt->process($arguments ?? $_SERVER['argv']);
+        $getopt->process($arguments);
         foreach ($getopt->getOptions() as $name => $value) {
             $this->convertOptionToProperty($name, $value);
         }
@@ -243,7 +241,7 @@ abstract class Command
     private static function toFlagName(string $name) : string
     {
         return preg_replace_callback('@([A-Z])@', function ($match) {
-            return strtolower("_{$match[1]}");
+            return strtolower("-{$match[1]}");
         }, $name);
     }
 
@@ -253,7 +251,7 @@ abstract class Command
      */
     private static function toPropertyName(string $name) : string
     {
-        return preg_replace_callback('@_([a-z])@', function ($match) {
+        return preg_replace_callback('@-([a-z])@', function ($match) {
             return strtoupper($match[1]);
         }, $name);
     }
