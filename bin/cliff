@@ -58,9 +58,7 @@ EOT
         );
     }
     if (!$cliff->showHelp()) {
-        $arguments = $cliff->getOperands();
-        array_shift($arguments); // script name
-        $cliff(...$arguments);
+        $cliff(...$cliff->getOperands());
     }
     exit(0);
 } catch (Missing $e) {
