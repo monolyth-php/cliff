@@ -6,7 +6,7 @@ use GetOpt\GetOpt;
 return function () : Generator {
     /** We can instantiate a command with default (CLI) options. */
     yield function () : void {
-        $command = new class([]) extends Monolyth\Cliff\Command {
+        $command = new class(['bar']) extends Monolyth\Cliff\Command {
 
             private $foo = '';
 
@@ -23,7 +23,7 @@ return function () : Generator {
             }
         };
 
-        $command('bar');
+        $command->execute();
         assert($command->getFoo() === 'bar');
         assert($command->bar === false);
     };
@@ -31,7 +31,7 @@ return function () : Generator {
     /** We can instantiate a command with custom options. */
     yield function () : void {
         foreach (['--bar', '-b'] as $argument) {
-            $command = new class([$argument]) extends Monolyth\Cliff\Command {
+            $command = new class(['bar', $argument]) extends Monolyth\Cliff\Command {
 
                 private $foo = '';
 
@@ -48,7 +48,7 @@ return function () : Generator {
                 }
             };
 
-            $command('bar');
+            $command->execute();
             assert($command->getFoo() === 'bar');
             assert($command->bar === true);
         }
