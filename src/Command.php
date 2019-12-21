@@ -108,6 +108,17 @@ abstract class Command
     }
 
     /**
+     * Execute the command. Shorthand for calling the command's custom
+     * `__invoke` method with the correct parameters.
+     *
+     * @return void
+     */
+    public function execute() : void
+    {
+        $this->__invoke(...$this->getOperands());
+    }
+
+    /**
      * @param string $name Command name as passed on the CLI. Cliff supports
      *  both `/` and Laravel-style `:` as separators (instead of PHP's clumsy
      * `\` namespace separator).
