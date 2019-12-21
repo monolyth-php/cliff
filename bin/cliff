@@ -58,7 +58,7 @@ EOT
         );
     }
     if (!$cliff->showHelp()) {
-        $cliff(...$cliff->getOperands());
+        $cliff->execute();
     }
     exit(0);
 } catch (Missing $e) {
