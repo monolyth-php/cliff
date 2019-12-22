@@ -49,6 +49,9 @@ if (!class_exists($command)) {
 }
 try {
     $cliff = new $command;
+    while ($forwarded = $cliff->forwards()) {
+        $cliff = $forwarded;
+    }
     if (!($cliff instanceof Command)) {
         fwrite(STDERR, <<<EOT
 
