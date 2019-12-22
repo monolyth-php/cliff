@@ -121,9 +121,10 @@ abstract class Command
     /**
      * Forward to a sub-command. Return null to signal this is final.
      *
+     * @param string $argument The (potential) name of the sub-command.
      * @return Monolyth\Cliff\Command|null
      */
-    public function forward() :? Command
+    public function forwards(string $argument) :? Command
     {
         return null;
     }
