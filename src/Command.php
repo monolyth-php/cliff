@@ -119,6 +119,16 @@ abstract class Command
     }
 
     /**
+     * Forward to a sub-command. Return null to signal this is final.
+     *
+     * @return Monolyth\Cliff\Command|null
+     */
+    public function forward() :? Command
+    {
+        return null;
+    }
+
+    /**
      * @param string $name Command name as passed on the CLI. Cliff supports
      *  both `/` and Laravel-style `:` as separators (instead of PHP's clumsy
      * `\` namespace separator).
