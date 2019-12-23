@@ -26,22 +26,24 @@ abstract class Command
      */
     public $help = '*';
 
+    /** var Monolyth\Cliff\Command */
+    protected $_forwardedFrom;
+
     /** @var array */
     private $_optionList = [];
 
     /** @var GetOpt\GetOpt */
     private $_getopt;
 
-    /** var bool */
-    private $_wasForwarded = false;
-
     /**
      * @param array|null $arguments Optional manual arguments.
+     * @param Monolyth\Cliff\Command|null Optional forwarding command.
      * @return void
      */
-    public function __construct(array $arguments = null)
+    public function __construct(array $arguments = null, Command $forwardingCommand = null)
     {
         $this->_optionList = [];
+        $this->_forwardedFrom = $forwardingCommand;
         $this->process($arguments);
     }
 
@@ -113,9 +115,7 @@ abstract class Command
      */
     public function execute() : void
     {
-        if (!$this->_wasForwarded) {
-            $this->__invoke(...$this->getOperands());
-        }
+        $this->__invoke(...$this->getOperands());
     }
 
     /**
@@ -164,9 +164,8 @@ abstract class Command
                 } else {
                     array_shift($arguments);
                 }
-                $forwardedCommand = new $test($arguments);
+                $forwardedCommand = new $test($arguments, $this);
                 $forwardedCommand->execute();
-                $this->_wasForwarded = true;
                 $this->_getopt = $getopt;
                 return;
             }
