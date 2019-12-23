@@ -159,12 +159,39 @@ an array containing the desired commands to the constructor:
 ```php
 <?php
 
-$command = new Foo\Command(['--bar']);
-$command('baz');
+$command = new Foo\Command(['--bar', 'baz']);
+$command->execute();
 
 ```
 
 This is identical to invoking with `vendor/bin/cliff foo --bar baz`.
+
+## Forwarding commands
+As of version 0.6 Cliff supports a powerful mechanism to _forward_ commands. As
+soon as the first passed operand resolves to a valid Cliff commandname,
+execution is delegated verbatim to this command (minus the operand in question).
+
+The `__invoke` method of the forwarding command is _not_ called. Instead, it is
+available on the protected `_forwardedFrom` property. It is then up to the
+implementor whether or not the forwarding command should be invoked, or if she
+needs it for other reasons. Additionally, only the last non-forwarding command
+has its options checked in strict mode.
+
+Command forwarding can be extremely useful if commands need to exist in their
+own right, but there are also (sub)commands that depend on them in any way. For
+example, imagine you have a command to generate a CSV of users for seeding. A
+subcommand could then take that list, filter it for e.g. only females, and
+overwrite it. The subcommand would then only have to worry about the filtering,
+not the generation.
+
+This could of course also be achieved in a more programmatic way using extending
+classes etc., but the advantage of subcommands is that the filter command from
+the example does _not_ rely on the generation command; instead, it could also be
+applied to a userlist from a different source (e.g. a database dump from the
+production site).
+
+In this way you can "chain" as many commands as you like. Name resolution
+follows the exact same rules as normal Cliff commands.
 
 ## Documentation, help and error reporting
 Via reflection, the doccomments of the class, the `__invoke` method and the
