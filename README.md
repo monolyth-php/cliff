@@ -171,11 +171,10 @@ As of version 0.6 Cliff supports a powerful mechanism to _forward_ commands. As
 soon as the first passed operand resolves to a valid Cliff commandname,
 execution is delegated verbatim to this command (minus the operand in question).
 
-The `__invoke` method of the forwarding command is _not_ called. Instead, it is
-available on the protected `_forwardedFrom` property. It is then up to the
-implementor whether or not the forwarding command should be invoked, or if she
-needs it for other reasons. Additionally, only the last non-forwarding command
-has its options checked in strict mode.
+The command forwarded to has access to the "parent command" via the protected
+`_forwardedFrom` property. Likewise, the forwarding command has access to the
+protected `_forwardedCommand` property. You may use these properties in your
+`__invoke` implementations to handle forwarded or forwarding calls differently.
 
 Command forwarding can be extremely useful if commands need to exist in their
 own right, but there are also (sub)commands that depend on them in any way. For
@@ -190,8 +189,8 @@ the example does _not_ rely on the generation command; instead, it could also be
 applied to a userlist from a different source (e.g. a database dump from the
 production site).
 
-In this way you can "chain" as many commands as you like. Name resolution
-follows the exact same rules as normal Cliff commands.
+In the above example, you might handle file generation with a forward in `/tmp`
+instead of some public location, leaving that to the final command.
 
 ## Documentation, help and error reporting
 Via reflection, the doccomments of the class, the `__invoke` method and the
