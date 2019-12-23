@@ -9,6 +9,7 @@ class FooCommand extends Command
 {
     public function __invoke(string $forwardedCommand) : void
     {
+        echo 1;
     }
 }
 
@@ -23,14 +24,23 @@ class BarCommand extends Command
     /** @var bool */
     private static $forwarded = false;
 
-    public function __invoke() : void
+    public function __invoke(string $forwardedCommand = null) : void
     {
+        echo 2;
         self::$forwarded = true;
     }
 
     public static function wasForwarded() : bool
     {
         return self::$forwarded;
+    }
+}
+
+class BuzzCommand extends Command
+{
+    public function __invoke() : void
+    {
+        echo 3;
     }
 }
 
@@ -103,8 +113,20 @@ return function () : Generator {
     /** A command can forward to other commands, with the correct operands passed. */
     yield function () : void {
         $command = new FooCommand(['monolyth/cliff/test/bar-command', '--foo', '--bar=baz']);
+        ob_start();
         $command->execute();
+        ob_end_clean();
         assert(BarCommand::wasForwarded() === true);
+    };
+
+    /** Forwarding can happen to an arbitrary level, with commands invoked in order. */
+    yield function () : void {
+        $command = new FooCommand(['monolyth/cliff/test/bar-command', 'monolyth/cliff/test/buzz-command']);
+        ob_start();
+        $command->execute();
+        $result = ob_get_clean();
+        assert(BarCommand::wasForwarded() === true);
+        assert($result === '123');
     };
 };
 
