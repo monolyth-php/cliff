@@ -29,6 +29,9 @@ abstract class Command
     /** var Monolyth\Cliff\Command */
     protected $_forwardedFrom;
 
+    /** var Monolyth\Cliff\Command */
+    protected $_forwardedCommand;
+
     /** @var array */
     private $_optionList = [];
 
@@ -116,6 +119,9 @@ abstract class Command
     public function execute() : void
     {
         $this->__invoke(...$this->getOperands());
+        if (isset($this->_forwardedCommand)) {
+            $this->_forwardedCommand->execute();
+        }
     }
 
     /**
@@ -164,8 +170,7 @@ abstract class Command
                 } else {
                     array_shift($arguments);
                 }
-                $forwardedCommand = new $test($arguments, $this);
-                $forwardedCommand->execute();
+                $this->_forwardedCommand = new $test($arguments, $this);
                 $this->_getopt = $getopt;
                 return;
             }
