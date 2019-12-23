@@ -26,24 +26,22 @@ abstract class Command
      */
     public $help = '*';
 
-    /** @var bool */
-    private $_strict = true;
-
     /** @var array */
     private $_optionList = [];
 
     /** @var GetOpt\GetOpt */
     private $_getopt;
 
+    /** var bool */
+    private $_wasForwarded = false;
+
     /**
      * @param array|null $arguments Optional manual arguments.
-     * @param bool $strict Disallow custom options. Defaults to true.
      * @return void
      */
-    public function __construct(array $arguments = null, bool $strict = true)
+    public function __construct(array $arguments = null)
     {
         $this->_optionList = [];
-        $this->_strict = $strict;
         $this->process($arguments);
     }
 
@@ -115,18 +113,9 @@ abstract class Command
      */
     public function execute() : void
     {
-        $this->__invoke(...$this->getOperands());
-    }
-
-    /**
-     * Forward to a sub-command. Return null to signal this is final.
-     *
-     * @param string $argument The (potential) name of the sub-command.
-     * @return Monolyth\Cliff\Command|null
-     */
-    public function forwards(string $argument) :? Command
-    {
-        return null;
+        if (!$this->_wasForwarded) {
+            $this->__invoke(...$this->getOperands());
+        }
     }
 
     /**
@@ -137,7 +126,7 @@ abstract class Command
      */
     public static function toPhpName(string $name) : string
     {
-        $parts = preg_split('@[:/]@', strtolower($name));
+        $parts = preg_split('@[:/]@', self::toPropertyName($name));
         array_walk($parts, function (&$part) : void {
             $part = ucfirst($part);
         });
@@ -150,13 +139,39 @@ abstract class Command
      */
     private function process(array $arguments = null) : void
     {
-        $getopt = new GetOpt(null, [GetOpt::SETTING_STRICT_OPTIONS => $this->_strict]);
+        $getopt = new GetOpt(null, [GetOpt::SETTING_STRICT_OPTIONS => false]);
         $reflection = new ReflectionObject($this);
         $annotations = new Annotations($reflection);
         if (isset($annotations['preload'])) {
             $this->preloadDependencies(...(is_array($annotations['preload']) ? $annotations['preload'] : [$annotations['preload']]));
         }
         $this->convertPropertiesToOptions($reflection);
+        $getopt->addOptions($this->_optionList);
+        foreach ($this->convertParametersToOperands($getopt) as $operand) {
+            $getopt->addOperand($operand);
+        }
+        $getopt->process($arguments);
+        $operands = $getopt->getOperands();
+        if ($operands) {
+            $test = array_shift($operands);
+            $test = self::toPhpName($test);
+            if (!class_exists($test)) {
+                $test = $test.'\Command';
+            }
+            if (class_exists($test) && is_subclass_of($test, __CLASS__)) {
+                if (is_null($arguments)) {
+                    $arguments = array_merge([$_SERVER['argv'][0]], array_splice($_SERVER['argv'], 2));
+                } else {
+                    array_shift($arguments);
+                }
+                $forwardedCommand = new $test($arguments);
+                $forwardedCommand->execute();
+                $this->_wasForwarded = true;
+                $this->_getopt = $getopt;
+                return;
+            }
+        }
+        $getopt = new GetOpt(null, [GetOpt::SETTING_STRICT_OPTIONS => true]);
         $getopt->addOptions($this->_optionList);
         foreach ($this->convertParametersToOperands($getopt) as $operand) {
             $getopt->addOperand($operand);
