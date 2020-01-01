@@ -166,7 +166,7 @@ abstract class Command
             }
             if (class_exists($test) && is_subclass_of($test, __CLASS__)) {
                 if (is_null($arguments)) {
-                    $arguments = array_merge([$_SERVER['argv'][0]], array_splice($_SERVER['argv'], 2));
+                    $arguments = array_splice($_SERVER['argv'], 2);
                 } else {
                     array_shift($arguments);
                 }
