@@ -166,31 +166,22 @@ $command->execute();
 
 This is identical to invoking with `vendor/bin/cliff foo --bar baz`.
 
-## Forwarding commands
-As of version 0.6 Cliff supports a powerful mechanism to _forward_ commands. As
-soon as the first passed operand resolves to a valid Cliff commandname,
-execution is delegated verbatim to this command (minus the operand in question).
+## Chaining commands
+Commands may be chained or output redirected using the standard features of your
+operating system of choice. E.g., on Unix-like systems this would be done using
+the pipe (`|`) and angular bracket (`<`) operator. Prior to Cliff 0.7, a more
+convoluted mechanism was used, but why reinvent the wheel, right?
 
-The command forwarded to has access to the "parent command" via the protected
-`_forwardedFrom` property. Likewise, the forwarding command has access to the
-protected `_forwardedCommand` property. You may use these properties in your
-`__invoke` implementations to handle forwarded or forwarding calls differently.
+Input may be _read_ using PHP's standard `STDIN` stream. To output something
+another script or command can use as input, simply `echo` it.
 
-Command forwarding can be extremely useful if commands need to exist in their
-own right, but there are also (sub)commands that depend on them in any way. For
-example, imagine you have a command to generate a CSV of users for seeding. A
-subcommand could then take that list, filter it for e.g. only females, and
-overwrite it. The subcommand would then only have to worry about the filtering,
-not the generation.
+A previous version of this readme had the following example: a command that
+generated a list of users, and another command that filtered it by female users
+only. This could now be achieved with something like this:
 
-This could of course also be achieved in a more programmatic way using extending
-classes etc., but the advantage of subcommands is that the filter command from
-the example does _not_ rely on the generation command; instead, it could also be
-applied to a userlist from a different source (e.g. a database dump from the
-production site).
-
-In the above example, you might handle file generation with a forward in `/tmp`
-instead of some public location, leaving that to the final command.
+```sh
+vendor/bin/cliff users | vendor/bin/cliff females > females.csv
+```
 
 ## Documentation, help and error reporting
 Via reflection, the doccomments of the class, the `__invoke` method and the
@@ -218,5 +209,6 @@ automate this (instead of using `require_once` calls which are slightly ugly).
 This annotation should be placed on the docblock of the class.
 
 Multiple `@preload` annotations are included in order. Note that all paths
-should be relative to `getcwd()`.
+should be relative to `getcwd()`. If you prefer `require_once` though, be our
+guest. :-)
 
