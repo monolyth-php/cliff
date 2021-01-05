@@ -26,12 +26,6 @@ abstract class Command
      */
     public $help = '*';
 
-    /** var Monolyth\Cliff\Command */
-    protected $_forwardedFrom;
-
-    /** var Monolyth\Cliff\Command */
-    protected $_forwardedCommand;
-
     /** @var array */
     private $_optionList = [];
 
@@ -40,13 +34,10 @@ abstract class Command
 
     /**
      * @param array|null $arguments Optional manual arguments.
-     * @param Monolyth\Cliff\Command|null Optional forwarding command.
      * @return void
      */
-    public function __construct(array $arguments = null, Command $forwardingCommand = null)
+    public function __construct(array $arguments = null)
     {
-        $this->_optionList = [];
-        $this->_forwardedFrom = $forwardingCommand;
         $this->process($arguments);
     }
 
@@ -119,9 +110,6 @@ abstract class Command
     public function execute() : void
     {
         $this->__invoke(...$this->getOperands());
-        if (isset($this->_forwardedCommand)) {
-            $this->_forwardedCommand->execute();
-        }
     }
 
     /**
@@ -152,30 +140,6 @@ abstract class Command
             $this->preloadDependencies(...(is_array($annotations['preload']) ? $annotations['preload'] : [$annotations['preload']]));
         }
         $this->convertPropertiesToOptions($reflection);
-        $getopt->addOptions($this->_optionList);
-        foreach ($this->convertParametersToOperands($getopt) as $operand) {
-            $getopt->addOperand($operand);
-        }
-        $getopt->process($arguments);
-        $operands = $getopt->getOperands();
-        if ($operands) {
-            $test = array_shift($operands);
-            $test = self::toPhpName($test);
-            if (!class_exists($test)) {
-                $test = $test.'\Command';
-            }
-            if (class_exists($test) && is_subclass_of($test, __CLASS__)) {
-                if (is_null($arguments)) {
-                    $arguments = array_splice($_SERVER['argv'], 2);
-                } else {
-                    array_shift($arguments);
-                }
-                $this->_forwardedCommand = new $test($arguments, $this);
-                $this->_getopt = $getopt;
-                return;
-            }
-        }
-        $getopt = new GetOpt(null, [GetOpt::SETTING_STRICT_OPTIONS => true]);
         $getopt->addOptions($this->_optionList);
         foreach ($this->convertParametersToOperands($getopt) as $operand) {
             $getopt->addOperand($operand);
