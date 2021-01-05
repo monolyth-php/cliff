@@ -4,6 +4,8 @@ namespace Monolyth\Cliff\Test;
 
 use Monolyth\Cliff\Command;
 use Generator;
+use GetOpt\GetOpt;
+use PHPUnit\Framework\TestCase;
 
 class FooCommand extends Command
 {
@@ -15,14 +17,11 @@ class FooCommand extends Command
 
 class BarCommand extends Command
 {
-    /** @var bool */
-    public $foo = false;
+    public bool $foo = false;
 
-    /** @var string */
-    public $bar;
+    public string $bar;
 
-    /** @var bool */
-    private static $forwarded = false;
+    private static bool $forwarded = false;
 
     public function __invoke(string $forwardedCommand = null) : void
     {
@@ -44,12 +43,10 @@ class BuzzCommand extends Command
     }
 }
 
-use GetOpt\GetOpt;
-
-/** Testsuite for Cliff commands */
-return function () : Generator {
-    /** We can instantiate a command with default (CLI) options. */
-    yield function () : void {
+final class CommandTest extends TestCase
+{
+    public function testWeCanInstantiateACommandWithDefaultCLIOptions() : void
+    {
         $command = new class(['bar']) extends Command {
 
             /** @var bool */
@@ -70,12 +67,12 @@ return function () : Generator {
         };
 
         $command->execute();
-        assert($command->getFoo() === 'bar');
-        assert($command->bar === false);
-    };
+        $this->assertEquals($command->getFoo(), 'bar');
+        $this->assertEquals($command->bar, false);
+    }
 
-    /** We can instantiate a command with custom options. */
-    yield function () : void {
+    public function testWeCanInstantiateACommandWithCustomOptions() : void
+    {
         foreach (['--bar', '-b'] as $argument) {
             $command = new class(['bar', $argument]) extends Command {
 
@@ -97,36 +94,17 @@ return function () : Generator {
             };
 
             $command->execute();
-            assert($command->getFoo() === 'bar');
-            assert($command->bar === true);
+            $this->assertEquals($command->getFoo(), 'bar');
+            $this->assertEquals($command->bar, true);
         }
-    };
+    }
 
-    /** toPhpName correctly converts command names to PHP ones. */
-    yield function () : void {
+    public function testToPhpNameCorrectlyConvertsCommandNamesToPHPOnes() : void
+    {
         $name = Command::toPhpName('foo:bar');
-        assert($name === 'Foo\Bar');
+        $this->assertEquals($name, 'Foo\Bar');
         $name = Command::toPhpName('foo/bar');
-        assert($name === 'Foo\Bar');
-    };
-
-    /** A command can forward to other commands, with the correct operands passed. */
-    yield function () : void {
-        $command = new FooCommand(['monolyth/cliff/test/bar-command', '--foo', '--bar=baz']);
-        ob_start();
-        $command->execute();
-        ob_end_clean();
-        assert(BarCommand::wasForwarded() === true);
-    };
-
-    /** Forwarding can happen to an arbitrary level, with commands invoked in order. */
-    yield function () : void {
-        $command = new FooCommand(['monolyth/cliff/test/bar-command', 'monolyth/cliff/test/buzz-command']);
-        ob_start();
-        $command->execute();
-        $result = ob_get_clean();
-        assert(BarCommand::wasForwarded() === true);
-        assert($result === '123');
-    };
-};
+        $this->assertEquals($name, 'Foo\Bar');
+    }
+}
 
