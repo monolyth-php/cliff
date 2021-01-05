@@ -16,7 +16,7 @@
         "monomelodies/reflex": "^0.3.0"
     },
     "require-dev": {
-        "toast/unit": "^2.0"
+        "phpunit/phpunit": "^9.5"
     },
     "autoload": {
         "psr-4": {
