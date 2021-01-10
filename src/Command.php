@@ -213,7 +213,7 @@ abstract class Command
             $default = $parameter->isDefaultValueAvailable();
             $mode = $default ? Operand::OPTIONAL : Operand::REQUIRED;
             $type = $parameter->getType();
-            if ("$type" === 'array') {
+            if ($type->getName() === 'array') {
                 $mode |= Operand::MULTIPLE;
             }
             $operand = new Operand($name, $mode);
