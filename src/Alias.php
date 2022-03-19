@@ -2,7 +2,9 @@
 
 namespace Monolyth\Cliff;
 
-#[\Attribute]
+use Attribute;
+
+#[Attribute(Attribute::TARGET_PROPERTY)]
 class Alias
 {
     private string $alias;
