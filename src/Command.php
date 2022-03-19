@@ -39,9 +39,8 @@ abstract class Command
     {
         $getopt = new GetOpt(null, [GetOpt::SETTING_STRICT_OPTIONS => false]);
         $reflection = new ReflectionObject($this);
-        $preloads = $reflection->getAnnotations(Preload::class);
-        $annotations = new Annotations($reflection);
-        if (isset($annotations['preload'])) {
+        $preloads = $reflection->getAttributes(Preload::class);
+        if ($preloads) {
             $this->preloadDependencies(...$preloads);
         }
         $this->convertPropertiesToOptions($reflection);
@@ -143,10 +142,10 @@ abstract class Command
     }
 
     /**
-     * @param string ...$dependencies
+     * @param Monolyth\Cliff\Preload ...$dependencies
      * @return void
      */
-    private function preloadDependencies(string ...$dependencies) : void
+    private function preloadDependencies(Preload ...$dependencies) : void
     {
         foreach ($dependencies as $preload) {
             require_once getcwd()."/$preload";
@@ -158,12 +157,12 @@ abstract class Command
         $defaults = $reflection->getDefaultProperties();
         $usedAliases = [];
         foreach ($reflection->getProperties(ReflectionProperty::IS_PUBLIC & ~ReflectionProperty::IS_STATIC) as $property) {
-            $aliases - $property->getAnnotations(Alias::class);
+            $aliases = $property->getAttributes(Alias::class);
             if ($aliases) {
-                if (strlen($aliases[0]->alias != 1)) {
-                    throw new DomainException("Aliases must be one-letter shorthand codes, {$aliases[0]->alias} given for ".$property->getName());
+                if (strlen("{$aliases[0]}" != 1)) {
+                    throw new DomainException("Aliases must be one-letter shorthand codes, {$aliases[0]} given for ".$property->getName());
                 }
-                $short = $aliases[0]->alias;
+                $short = "{$aliases[0]}";
             } else {
                 $short = substr($property->getName(), 0, 1);
             }
