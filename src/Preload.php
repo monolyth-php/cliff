@@ -2,7 +2,9 @@
 
 namespace Monolyth\Cliff;
 
-#[\Attribute]
+use Attribute;
+
+#[Attribute(Attribute::TARGET_CLASS | Attribute::IS_REPEATABLE)]
 class Preload
 {
     private string $file;
