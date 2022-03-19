@@ -93,14 +93,13 @@ So e.g. if your command class specifies the `file`, `format` and `foo`
 properties, only `-f` for `---file` and `-F` for format will be available as a
 shorthand.
 
-To explicitly specify the short-hand version you want, you may annotate the
-property:
+To explicitly specify the short-hand version you want, you may use an attribute:
 
 ```php
 <?php
 
 //...
-/** @Alias o */
+#[\Monolyth\Cliff\Alias("o")]
 public $foo;
 ```
 
@@ -204,11 +203,11 @@ when required arguments are missing.
 
 ## Preloading files
 Like `vendor/autoload.php`, your command might require some bootstrapping, e.g.
-if you're using a framework. You can use the `@preload [filename]` annotation to
-automate this (instead of using `require_once` calls which are slightly ugly).
-This annotation should be placed on the docblock of the class.
+if you're using a framework. You can use the `Monolyth\Cliff\Preload("filename")`
+attribute to automate this (instead of using `require_once` calls which are
+slightly ugly). This attribute should be placed on the class.
 
-Multiple `@preload` annotations are included in order. Note that all paths
-should be relative to `getcwd()`. If you prefer `require_once` though, be our
-guest. :-)
+Multiple `Preload` attributes are included in order. Note that all paths should
+be relative to `getcwd()`. If you prefer `require_once` though, be our guest.
+:-)
 
