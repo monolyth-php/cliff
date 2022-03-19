@@ -38,7 +38,22 @@ abstract class Command
      */
     public function __construct(array $arguments = null)
     {
-        $this->process($arguments);
+        $getopt = new GetOpt(null, [GetOpt::SETTING_STRICT_OPTIONS => false]);
+        $reflection = new ReflectionObject($this);
+        $annotations = new Annotations($reflection);
+        if (isset($annotations['preload'])) {
+            $this->preloadDependencies(...(is_array($annotations['preload']) ? $annotations['preload'] : [$annotations['preload']]));
+        }
+        $this->convertPropertiesToOptions($reflection);
+        $getopt->addOptions($this->_optionList);
+        foreach ($this->convertParametersToOperands($getopt) as $operand) {
+            $getopt->addOperand($operand);
+        }
+        $getopt->process($arguments);
+        foreach ($getopt->getOptions() as $name => $value) {
+            $this->convertOptionToProperty($name, $value);
+        }
+        $this->_getopt = $getopt;
     }
 
     /**
@@ -125,30 +140,6 @@ abstract class Command
             $part = ucfirst($part);
         });
         return implode('\\', $parts);
-    }
-
-    /**
-     * @param array|null $arguments Optional manual arguments.
-     * @return void
-     */
-    private function process(array $arguments = null) : void
-    {
-        $getopt = new GetOpt(null, [GetOpt::SETTING_STRICT_OPTIONS => false]);
-        $reflection = new ReflectionObject($this);
-        $annotations = new Annotations($reflection);
-        if (isset($annotations['preload'])) {
-            $this->preloadDependencies(...(is_array($annotations['preload']) ? $annotations['preload'] : [$annotations['preload']]));
-        }
-        $this->convertPropertiesToOptions($reflection);
-        $getopt->addOptions($this->_optionList);
-        foreach ($this->convertParametersToOperands($getopt) as $operand) {
-            $getopt->addOperand($operand);
-        }
-        $getopt->process($arguments);
-        foreach ($getopt->getOptions() as $name => $value) {
-            $this->convertOptionToProperty($name, $value);
-        }
-        $this->_getopt = $getopt;
     }
 
     /**
