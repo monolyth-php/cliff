@@ -10,7 +10,6 @@ use Throwable;
 use Monomelodies\Reflex\ReflectionObject;
 use Monomelodies\Reflex\ReflectionMethod;
 use Monomelodies\Reflex\ReflectionProperty;
-use zpt\anno\Annotations;
 use Generator;
 
 /**
@@ -40,9 +39,10 @@ abstract class Command
     {
         $getopt = new GetOpt(null, [GetOpt::SETTING_STRICT_OPTIONS => false]);
         $reflection = new ReflectionObject($this);
+        $preloads = $reflection->getAnnotations(Preload::class);
         $annotations = new Annotations($reflection);
         if (isset($annotations['preload'])) {
-            $this->preloadDependencies(...(is_array($annotations['preload']) ? $annotations['preload'] : [$annotations['preload']]));
+            $this->preloadDependencies(...$preloads);
         }
         $this->convertPropertiesToOptions($reflection);
         $getopt->addOptions($this->_optionList);
@@ -158,12 +158,12 @@ abstract class Command
         $defaults = $reflection->getDefaultProperties();
         $usedAliases = [];
         foreach ($reflection->getProperties(ReflectionProperty::IS_PUBLIC & ~ReflectionProperty::IS_STATIC) as $property) {
-            $annotations = new Annotations($property);
-            if (isset($annotations['alias'])) {
-                if (strlen($annotations['alias']) == 1) {
-                    throw new DomainException("Aliases must be one-letter shorthand codes, {$annotations['alias']} given for ".$property->getName());
+            $aliases - $property->getAnnotations(Alias::class);
+            if ($aliases) {
+                if (strlen($aliases[0]->alias != 1)) {
+                    throw new DomainException("Aliases must be one-letter shorthand codes, {$aliases[0]->alias} given for ".$property->getName());
                 }
-                $short = $annotations['alias'];
+                $short = $aliases[0]->alias;
             } else {
                 $short = substr($property->getName(), 0, 1);
             }
