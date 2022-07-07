@@ -123,12 +123,11 @@ optional by default). Defining these in your command class is simple:
 
 class Command extends \Monolyth\Cliff\Command
 {
-    /** @var string */
-    public $requiredOption; // No default value, so this is required
-    /** @var string */
-    public $optionalOption = 'foo'; // The default value means this is optional
-    /** @var bool */
-    public $emptyOption = false; // Boolean options are per defintion empty
+    public string $requiredOption; // No default value, so this is required
+
+    public string $optionalOption = 'foo'; // The default value means this is optional
+
+    public bool $emptyOption = false; // Boolean options are per defintion empty
 }
 
 ```
