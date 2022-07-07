@@ -2,7 +2,7 @@
 
 namespace Monolyth\Cliff;
 
-use GetOpt\{ GetOpt, Option, ArgumentException\Unexpacted, Operand };
+use GetOpt\{ GetOpt, Option, ArgumentException\Unexpected, Operand };
 use Throwable;
 use Monomelodies\Reflex\{ ReflectionObject, ReflectionMethod, ReflectionProperty };
 use Generator;
@@ -155,7 +155,7 @@ abstract class Command
             $aliases = $property->getAttributes(Alias::class);
             if ($aliases) {
                 if (strlen("{$aliases[0]}" != 1)) {
-                    throw new DomainException("Aliases must be one-letter shorthand codes, {$aliases[0]} given for ".$property->getName());
+                    throw new IllegalShortHandAliasException("Aliases must be one-letter shorthand codes, {$aliases[0]} given for ".$property->getName());
                 }
                 $short = "{$aliases[0]}";
             } else {
@@ -175,10 +175,13 @@ abstract class Command
             } else {
                 $long = self::toFlagName($property->getName());
             }
-            $type = gettype($property->getValue($this));
-            $optional = $type === 'boolean'
+            $type = $property->getType();
+            if (!$type) {
+                throw new PropertiesMustByTypeHintedException(sprintf('Found in %s::%s', get_class($this), $name));
+            }
+            $optional = $type->getName() === 'bool'
                 ? GetOpt::NO_ARGUMENT
-                : ($type === 'array'
+                : ($type->getName() === 'array'
                     ? GetOpt::MULTIPLE_ARGUMENT
                     : (isset($defaults[$property->getName()]) ? GetOpt::OPTIONAL_ARGUMENT : GetOpt::REQUIRED_ARGUMENT)
                 );
@@ -209,21 +212,33 @@ abstract class Command
         }
     }
 
-    private function convertOptionToProperty(string $name, $value) : void
+    private function convertOptionToProperty(string $name, mixed $value) : void
     {
         $name = self::toPropertyName($name);
         if (!property_exists($this, $name)) {
             return;
         }
-        $type = gettype($this->$name);
-        if ($type == 'boolean') {
-            $this->$name = !$this->$name;
-        } else {
-            if (gettype($value) === 'string' || gettype($value) === 'array') {
+        $type = (new ReflectionProperty($this, $name))->getType();
+        if (!$type) {
+            throw new PropertiesMustByTypeHintedException(sprintf('Found in %s::%s', get_class($this), $name));
+        }
+        switch ($type->getName()) {
+            case 'bool':
+                $this->$name = !$this->$name;
+                break;
+            case 'array':
                 $this->$name = $value;
-            } elseif ($type === 'string' && !strlen($this->$name)) {
-                $this->$name = null;
-            }
+                array_walk($this->$name, function (string &$value) : void {
+                    if (!strlen($value)) {
+                        $value = null;
+                    }
+                });
+                break;
+            case 'string':
+                $this->$name = strlen($value) ? $value : null;
+                break;
+            default:
+                throw new IllegalPropertyTypeHintException(sprintf('Found in %s:%s (found type %s)', get_class($this), $name, $type->getName()));
         }
     }
 
