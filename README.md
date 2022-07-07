@@ -104,8 +104,8 @@ public $foo;
 ```
 
 Note that only the longhand variant is set as a property, unless the option is
-defined as shorthand-only. In other words, only the properties defined on the
-class are used.
+defined as shorthand-only (i.e., a property with a single-letter name). In other
+words, only the properties defined on the class are used.
 
 ## Long option names
 `$snakeCased` option properties are translated hyphen-separated options on the
@@ -141,13 +141,27 @@ In other words, an optional option can act as either having a value or a
 boolean.
 
 If an optional argument has a default value of an empty string, it is set to
-`NULL` instead so various PHP coalesce operators will work as expected.
+`NULL` instead so various PHP coalesce operators will work as expected. Hence,
+optional string options with no default _must_ be nullable (`?string`).
+
+Only the `string`, `bool` and `array` types are allowed for option properties.
+This is the nature of a CLI interface.
 
 ### Negating empty options
 If an empty option is set, the default boolean value is _negated_. So if the
 default is `true`, setting the option makes it `false` and vice versa. Typically
 a default of `false` will make the most sense, but this might come in handy if
 your code's logic is... peculiar.
+
+### Array options
+If an option is type hinted as an array (of strings), it automatically allows
+multiple values to be paased, e.g.:
+
+```sh
+$ vendor/bin/cliff my/command --test=foo --test=bar
+```
+
+Like with string options, empty strings will be forced to `null`.
 
 ## Manually passing options
 Sometimes you'll want to run a command from another script, e.g. when using the
