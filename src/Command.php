@@ -2,14 +2,9 @@
 
 namespace Monolyth\Cliff;
 
-use GetOpt\GetOpt;
-use GetOpt\Option;
-use GetOpt\ArgumentException\Unexpected;
-use GetOpt\Operand;
+use GetOpt\{ GetOpt, Option, ArgumentException\Unexpacted, Operand };
 use Throwable;
-use Monomelodies\Reflex\ReflectionObject;
-use Monomelodies\Reflex\ReflectionMethod;
-use Monomelodies\Reflex\ReflectionProperty;
+use Monomelodies\Reflex\{ ReflectionObject, ReflectionMethod, ReflectionProperty };
 use Generator;
 
 /**
@@ -23,10 +18,10 @@ abstract class Command
      * The built-in `-h[OPTION]` or `--help[=OPTION]` command displays detailed
      * information about an option.
      */
-    public $help = '*';
+    public string $help = '*';
 
     /** @var array */
-    private $_optionList = [];
+    private array $_optionList = [];
 
     /** @var GetOpt\GetOpt */
     private $_getopt;
