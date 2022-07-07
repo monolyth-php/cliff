@@ -66,5 +66,33 @@ final class CommandTest extends TestCase
         $name = Command::toPhpName('foo/bar');
         $this->assertEquals($name, 'Foo\Bar');
     }
+
+    public function testManualInvocationWithValue() : void
+    {
+        $command = new class(['--test=bla']) extends Command {
+            public string $test;
+
+            public function __invoke() : void
+            {
+            }
+        };
+
+        $command->execute();
+        $this->assertEquals($command->test, 'bla');
+    }
+
+    public function testArrayOptions() : void
+    {
+        $command = new class(['--test=foo', '--test=bar']) extends Command {
+            public array $test = [];
+
+            public function __invoke() : void
+            {
+            }
+        };
+
+        $command->execute();
+        $this->assertEquals($command->test, ['foo', 'bar']);
+    }
 }
 
