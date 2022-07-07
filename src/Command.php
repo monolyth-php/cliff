@@ -177,7 +177,7 @@ abstract class Command
             }
             $type = $property->getType();
             if (!$type) {
-                throw new PropertiesMustByTypeHintedException(sprintf('Found in %s::%s', get_class($this), $name));
+                throw new PropertiesMustBeTypeHintedException(sprintf('Found in %s::%s', get_class($this), $name));
             }
             $optional = $type->getName() === 'bool'
                 ? GetOpt::NO_ARGUMENT
@@ -220,7 +220,7 @@ abstract class Command
         }
         $type = (new ReflectionProperty($this, $name))->getType();
         if (!$type) {
-            throw new PropertiesMustByTypeHintedException(sprintf('Found in %s::%s', get_class($this), $name));
+            throw new PropertiesMustBeTypeHintedException(sprintf('Found in %s::%s', get_class($this), $name));
         }
         switch ($type->getName()) {
             case 'bool':
