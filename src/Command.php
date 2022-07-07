@@ -170,10 +170,11 @@ abstract class Command
             } else {
                 $usedAliases[] = $short;
             }
-            if (strlen($property->getName()) == 1) {
+            $name = $property->getName();
+            if (strlen($name) == 1) {
                 $long = null;
             } else {
-                $long = self::toFlagName($property->getName());
+                $long = self::toFlagName($name);
             }
             $type = $property->getType();
             if (!$type) {
