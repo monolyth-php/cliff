@@ -45,7 +45,7 @@ if (!class_exists($command)) {
 }
 try {
     if (class_exists(Factory::class)) {
-        $cliff = Factory::build();
+        $cliff = Factory::build($command);
     } else {
         $cliff = new $command;
     }
