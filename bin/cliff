@@ -6,6 +6,7 @@ namespace Monolyth\Cliff;
 use Throwable;
 use Monomelodies\Reflex\ReflectionMethod;
 use GetOpt\ArgumentException\Missing;
+use Monolyth\Disclosure\Factory;
 
 if (!file_exists(getcwd().'/vendor/autoload.php')) {
     fwrite(STDERR, <<<EOT
@@ -43,7 +44,11 @@ if (!class_exists($command)) {
     $command .= '\Command';
 }
 try {
-    $cliff = new $command;
+    if (class_exists(Factory::class)) {
+        $cliff = Factory::build();
+    } else {
+        $cliff = new $command;
+    }
     if (!($cliff instanceof Command)) {
         fwrite(STDERR, <<<EOT
 
