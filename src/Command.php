@@ -13,18 +13,14 @@ use Generator;
 abstract class Command
 {
     /**
-     * @var string
-     *
      * The built-in `-h[OPTION]` or `--help[=OPTION]` command displays detailed
      * information about an option.
      */
     public string $help = '*';
 
-    /** @var array */
     private array $_optionList = [];
 
-    /** @var GetOpt\GetOpt */
-    private $_getopt;
+    private GetOpt $_getopt;
 
     /**
      * @param array|null $arguments Optional manual arguments.
