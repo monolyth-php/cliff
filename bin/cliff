@@ -47,6 +47,7 @@ if (!class_exists($command)) {
 $reflection = new ReflectionClass($command);
 $preloads = $reflection->getAttributes(Preload::class);
 foreach ($preloads as $preload) {
+    $preload = $preload->newInstance();
     require_once getcwd()."/$preload";
 }
 
