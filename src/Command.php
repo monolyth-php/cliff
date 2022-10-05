@@ -34,10 +34,6 @@ abstract class Command
     {
         $getopt = new GetOpt(null, [GetOpt::SETTING_STRICT_OPTIONS => false]);
         $reflection = new ReflectionObject($this);
-        $preloads = $reflection->getAttributes(Preload::class);
-        if ($preloads) {
-            $this->preloadDependencies(...$preloads);
-        }
         $this->convertPropertiesToOptions($reflection);
         $getopt->addOptions($this->_optionList);
         foreach ($this->convertParametersToOperands($getopt) as $operand) {
@@ -134,17 +130,6 @@ abstract class Command
             $part = ucfirst($part);
         });
         return implode('\\', $parts);
-    }
-
-    /**
-     * @param Monolyth\Cliff\Preload ...$dependencies
-     * @return void
-     */
-    private function preloadDependencies(Preload ...$dependencies) : void
-    {
-        foreach ($dependencies as $preload) {
-            require_once getcwd()."/$preload";
-        }
     }
 
     private function convertPropertiesToOptions(ReflectionObject $reflection) : void
