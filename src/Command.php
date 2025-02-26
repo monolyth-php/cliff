@@ -26,7 +26,7 @@ abstract class Command
      * @param array|null $arguments Optional manual arguments.
      * @return void
      */
-    public function __construct(array $arguments = null)
+    public function __construct(?array $arguments = null)
     {
         $getopt = new GetOpt(null, [GetOpt::SETTING_STRICT_OPTIONS => false]);
         $reflection = new ReflectionObject($this);
